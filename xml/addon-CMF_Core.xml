@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<addon addon_id="CMF_Core" title="[CMF] Core" version_string="1.0.0 b1" version_id="1000031" url="" install_callback_class="" install_callback_method="" uninstall_callback_class="" uninstall_callback_method="">
+  <admin_navigation/>
+  <admin_permissions/>
+  <admin_style_properties/>
+  <admin_templates/>
+  <admin_template_modifications/>
+  <code_events>
+    <event event_id="init_application"><![CDATA[<p>Called when the CMF core application loads its default data.</p>
+
+<p>Callback signature:</p>
+<blockquote><code><em>CMF_Core_Application</em> $app</blockquote>
+
+<p>Arguments:</p>
+<ol>
+	<li><code><em>CMF_Core_Application</em> $app</code> - instance of CMF core application class</li>
+</ol>]]></event>
+    <event event_id="init_listeners"><![CDATA[<p>Called after loading all event listeners from DB or cache.</p>
+
+<p>Callback signature:</p>
+<blockquote><code><em>array</em> &$listeners</code></blockquote>
+
+<p>Arguments:</p>
+<ol>
+	<li><code><em>array</em> &$listeners</code> - a modifiable list of events and listeners loaded from registry. See below.</li>
+</ol>
+
+<p>Warning! This event fired before XenForo_Options is loaded!</p>]]></event>
+    <event event_id="load_class_proxy_class"><![CDATA[<p>Called when autoloading a class with proxy autoload. This event can be used to extend the any base XenForo class that will be instantiated dynamically.</p>
+
+<p>Callback signature:</p>
+<blockquote><code>$class, <em>array</em> &$extend</code></blockquote>
+
+<p>Arguments:</p>
+<ol>
+	<li><code><em>string</em> $class</code> - the name of the class to be created</li>
+	<li><code><em>array</em> &$extend</code> - a modifiable list of classes that wish to extend the class. See below.</li>
+</ol>
+
+<p>To use this event properly, determine if the class is one you want to extend. If so, add a new entry to $extend with the name of the class that should extend it. This class MUST be defined as follows:</p>
+
+<pre>class My_Class_Name extends XFCP_My_Class_Name
+{
+	// functionality to extend/override
+}</pre>
+
+<p>This class must extend the non-existent XFCP_x class. This will be resolved at run time.</p>]]></event>
+  </code_events>
+  <code_event_listeners>
+    <listener event_id="init_listeners" execute_order="1" callback_class="CMF_Core_Listener" callback_method="initListeners" active="1" hint="" description="Base Init Listeners (for enabling disabling addon)"/>
+  </code_event_listeners>
+  <cron/>
+  <email_templates/>
+  <email_template_modifications/>
+  <optiongroups/>
+  <permissions>
+    <permission_groups/>
+    <permissions/>
+    <interface_groups/>
+  </permissions>
+  <phrases>
+    <phrase title="cmf_child_nodes" version_id="0" version_string="0.0.1 alpha"><![CDATA[Child Nodes]]></phrase>
+    <phrase title="cmf_update_child_nodes_on_save" version_id="0" version_string="0.0.1 alpha"><![CDATA[Update Child Nodes On Save]]></phrase>
+  </phrases>
+  <route_prefixes/>
+  <style_properties/>
+  <templates/>
+  <public_template_modifications/>
+  <bb_code_media_sites/>
+</addon>
