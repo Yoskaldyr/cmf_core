@@ -83,16 +83,14 @@ public static function initListeners(CMF_Core_Listener $events) {
 }
 ~~~
 
-**Внимание!** При расширении абстрактных классов вместо имени класса, которым надо расширить, указывается массив из этого имени и 2-го поля со значением `'abstract'`, например:
+**Внимание!** При расширении абстрактных классов, в имени расширяемого класса или в имени дочернего класса должно быть слово `Abstract`, т.е. Convention over Configuration, например:
 
 ~~~php
 <?php
 public static function initListeners(CMF_Core_Listener $events) {
 	$events->addProxyExtenders(
 		array(
-			'XenForo_DataWriter' => array(
-				array('AddOn_DataWriter_Abstract', 'abstract')
-			)
+			'XenForo_DataWriter' => 'AddOn_DataWriter_Abstract'
 		)
 	);
 }

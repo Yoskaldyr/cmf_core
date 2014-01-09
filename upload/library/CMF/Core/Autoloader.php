@@ -250,33 +250,25 @@ class CMF_Core_Autoloader extends XenForo_Autoloader
 					include($proxyFile);
 				}
 				//dynamic resolve only if proxy class loaded
-				if (class_exists($createClass, false) || interface_exists($createClass, false))
+				if (($isInterface = interface_exists($createClass, false)) || class_exists($createClass, false))
 				{
 					try
 					{
-						$type = 'class';
+						if ($isInterface)
+						{
+							$type = 'interface';
+						}
+						//convention over configuration: word "Abstract" must preset in abstract class names
+						else if (strpos($createClass, 'Abstract') || strpos(reset($extend), 'Abstract'))
+						{
+							$type = 'abstract class';
+						}
+						else
+						{
+							$type = 'class';
+						}
 						foreach ($extend AS $dynamicClass)
 						{
-							if (is_array($dynamicClass))
-							{
-								if (!empty($dynamicClass[1]))
-								{
-									switch ($dynamicClass[1])
-									{
-										case 'abstract':
-											$type = 'abstract class';
-											break;
-										case 'interface':
-											$type = 'interface';
-											break;
-									}
-									$dynamicClass = $dynamicClass[0];
-								}
-								else
-								{
-									continue;
-								}
-							}
 							// XenForo Class Proxy, in case you're wondering
 							$proxyClass = 'XFCP_' . $dynamicClass;
 							eval($type . ' ' . $proxyClass . ' extends ' . $createClass . ' {}');

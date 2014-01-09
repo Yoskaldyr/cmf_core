@@ -32,16 +32,32 @@ class CMF_Core_Listener extends XenForo_CodeEvent
 	public static $enabled = false;
 
 	/**
+	 * Normal & proxy extenders array
+	 * @var array
+	 */
+	protected static $_extend = array();
+
+	/**
+	 * Extender types array
+	 * @var array
+	 */
+	protected static $_extendTypes = array(
+		'all' => array(
+			'event' => 'load_class',
+			'method' => 'loadClass'
+
+		),
+		'proxy' => array(
+			'event' => 'load_class_proxy_class',
+			'method' => 'loadProxyClass'
+		)
+	);
+
+	/**
 	 * Dynamic extenders input array
 	 * @var array
 	 */
 	protected static $_extendInput = array();
-
-	/**
-	 * Normal extenders array
-	 * @var array
-	 */
-	protected static $_extend = array();
 
 	/**
 	 * XFCP_* classes loader counter
@@ -93,55 +109,26 @@ class CMF_Core_Listener extends XenForo_CodeEvent
 	 * */
 	public function prepareDynamicListeners()
 	{
-		if (self::$_extendInput)
+		$listeners = array();
+		foreach (self::$_extendInput as $type => $extend)
 		{
-			$listeners = array();
-			$keys = array(
-				'all', 'proxy_class', 'bb_code', 'controller', 'datawriter',
-				'importer', 'mail', 'model', 'route_prefix', 'search_data', 'view'
-			);
-
-			//not grouped extenders - merge with 'all'
-			$all = array_diff_key(self::$_extendInput, array_flip($keys));
-			self::$_extendInput['all'] = isset(self::$_extendInput['all']) ? array_merge_recursive(self::$_extendInput['all'], $all) : $all;
-
-			foreach ($keys as $type)
+			if ($extend && isset(self::$_extendTypes[$type]))
 			{
-				if (!empty(self::$_extendInput[$type]))
+				foreach ($extend as $className => $value)
 				{
-					if ($type == 'proxy_class')
+					if (!isset($listeners[self::$_extendTypes[$type]['event']][$className]) && !isset(self::$_extend[$type][$className]))
 					{
-						$event = 'load_class_proxy_class';
-						$method = 'loadProxyClass';
-						$newType = 'proxy';
+						$listeners[self::$_extendTypes[$type]['event']][$className] = array(
+							array('CMF_Core_Listener', self::$_extendTypes[$type]['method'])
+						);
 					}
-					else
-					{
-						$event  = 'load_class';
-						$method = 'loadClass';
-						$newType = 'all';
-					}
-
-					foreach (self::$_extendInput[$type] as $className => $extend)
-					{
-						if (!isset($listeners[$event][$className]) && !isset(self::$_extend[$newType][$className]))
-						{
-							$listeners[$event][$className] = array(
-								array('CMF_Core_Listener', $method)
-							);
-						}
-					}
-					self::$_extend[$newType] = isset(self::$_extend[$newType]) ? array_merge_recursive(self::$_extend[$newType], self::$_extendInput[$type]) : self::$_extendInput[$type];
 				}
+				self::$_extend[$type] = isset(self::$_extend[$type]) ? array_merge_recursive(self::$_extend[$type], $extend) : $extend;
 			}
-			self::$_extendInput = array();
+		}
+		self::$_extendInput = array();
 
-			return $listeners;
-		}
-		else
-		{
-			return array();
-		}
+		return $listeners;
 	}
 
 	/**
@@ -236,17 +223,7 @@ class CMF_Core_Listener extends XenForo_CodeEvent
 	 */
 	public function addExtenders($extenders, $prepend = false)
 	{
-		if (self::$enabled)
-		{
-			if (!self::$_extendInput)
-			{
-				self::$_extendInput = $extenders;
-			}
-			else
-			{
-				self::$_extendInput = ($prepend) ? array_merge_recursive($extenders, self::$_extendInput) : array_merge_recursive(self::$_extendInput, $extenders);
-			}
-		}
+		$this->_addTypeExtenders($extenders, $prepend, 'all');
 	}
 
 	/**
@@ -259,15 +236,27 @@ class CMF_Core_Listener extends XenForo_CodeEvent
 	 */
 	public function addProxyExtenders($extenders, $prepend = false)
 	{
-		if (self::$enabled)
+		$this->_addTypeExtenders($extenders, $prepend, 'proxy');
+	}
+
+	/**
+	 * Add class lists for specified class extender.
+	 *
+	 * @param array  $extenders Array of class list
+	 * @param bool   $prepend   Add to start of extenders's list if true
+	 * @param string $type
+	 */
+	protected function _addTypeExtenders($extenders, $prepend = false, $type = 'all')
+	{
+		if (self::$enabled && isset(self::$_extendTypes[$type]))
 		{
-			if (!isset(self::$_extendInput['proxy_class']))
+			if (!isset(self::$_extendInput[$type]))
 			{
-				self::$_extendInput['proxy_class'] = $extenders;
+				self::$_extendInput[$type] = $extenders;
 			}
 			else
 			{
-				self::$_extendInput['proxy_class'] = ($prepend) ? array_merge_recursive($extenders, self::$_extendInput['proxy_class']) : array_merge_recursive(self::$_extendInput['proxy_class'], $extenders);
+				self::$_extendInput[$type] = ($prepend) ? array_merge_recursive($extenders, self::$_extendInput[$type]) : array_merge_recursive(self::$_extendInput[$type], $extenders);
 			}
 		}
 	}
@@ -283,27 +272,7 @@ class CMF_Core_Listener extends XenForo_CodeEvent
 	 */
 	public function extendClass($class, $extend, $prepend = false)
 	{
-		if (self::$enabled && $class && $extend)
-		{
-			if (!isset(self::$_extend['all'][$class]))
-			{
-				$this->prependListener('load_class', array('CMF_Core_Listener', 'loadClass'), $class);
-				self::$_extend['all'][$class] = array();
-			}
-			if (!is_array(self::$_extend['all'][$class]))
-			{
-				self::$_extend['all'][$class] = array(self::$_extend['all'][$class]);
-			}
-
-			if ($prepend)
-			{
-				array_unshift(self::$_extend['all'][$class], $extend);
-			}
-			else
-			{
-				self::$_extend['all'][$class][] = $extend;
-			}
-		}
+		$this->_extendTypeClass($class, $extend, $prepend, 'all');
 	}
 
 	/**
@@ -316,26 +285,39 @@ class CMF_Core_Listener extends XenForo_CodeEvent
 	 */
 	public function extendProxyClass($class, $extend, $prepend = false)
 	{
-		if (self::$enabled && $class && $extend)
-		{
-			if (!isset(self::$_extend['proxy'][$class]))
-			{
-				$this->prependListener('load_class_proxy_class', array('CMF_Core_Listener', 'loadProxyClass'), $class);
-				self::$_extend['proxy'][$class] = array();
-			}
+		$this->_extendTypeClass($class, $extend, $prepend, 'proxy');
+	}
 
-			if (!is_array(self::$_extend['proxy'][$class]))
+	/**
+	 * Extender method for single normal class with event autocreate
+	 * Usage only after init_listeners event
+	 *
+	 * @param string $class   Class name to extend
+	 * @param string $extend  Extend class name
+	 * @param bool   $prepend Add to start of extenders's list if true
+	 * @param string $type
+	 */
+	protected function _extendTypeClass($class, $extend, $prepend = false, $type = 'all')
+	{
+		if (self::$enabled && $class && $extend && isset(self::$_extendTypes[$type]))
+		{
+			if (!isset(self::$_extend[$type][$class]))
 			{
-				self::$_extend['proxy'][$class] = array(self::$_extend['proxy'][$class]);
+				$this->prependListener(self::$_extendTypes[$type]['event'], array('CMF_Core_Listener', self::$_extendTypes[$type]['method']), $class);
+				self::$_extend[$type][$class] = array();
+			}
+			if (!is_array(self::$_extend[$type][$class]))
+			{
+				self::$_extend[$type][$class] = array(self::$_extend[$type][$class]);
 			}
 
 			if ($prepend)
 			{
-				array_unshift(self::$_extend['proxy'][$class], $extend);
+				array_unshift(self::$_extend[$type][$class], $extend);
 			}
 			else
 			{
-				self::$_extend['proxy'][$class][] = $extend;
+				self::$_extend[$type][$class][] = $extend;
 			}
 		}
 	}
@@ -375,8 +357,8 @@ class CMF_Core_Listener extends XenForo_CodeEvent
 		);
 		$events->addProxyExtenders(
 			array(
-			     'XenForo_DataWriter'                   => array(array('CMF_Core_DataWriter_Abstract', 'abstract')),
-			     'XenForo_ControllerAdmin_NodeAbstract' => array(array('CMF_Core_ControllerAdmin_NodeAbstract', 'abstract'))
+			     'XenForo_DataWriter'                   => 'CMF_Core_DataWriter_Abstract',
+			     'XenForo_ControllerAdmin_NodeAbstract' => 'CMF_Core_ControllerAdmin_NodeAbstract'
 			)
 		);
 	}
@@ -392,9 +374,8 @@ class CMF_Core_Listener extends XenForo_CodeEvent
 	 *
 	 * @param XenForo_Dependencies_Abstract $dependencies
 	 * @param array                         $data
-	 *
-	 * */
-	public static function initDependencies(XenForo_Dependencies_Abstract $dependencies, array $data)
+	 */
+	public static function initDependencies(/** @noinspection PhpUnusedParameterInspection */ XenForo_Dependencies_Abstract $dependencies, array $data)
 	{
 		//first launch if core active
 		CMF_Core_Application::getInstance();

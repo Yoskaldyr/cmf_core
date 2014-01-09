@@ -83,16 +83,14 @@ public static function initListeners(CMF_Core_Listener $events) {
 }
 ~~~
 
-**Atention!** Extending abstract classes you have to point array consisting of name of the class and second field 'abstract':
+**Atention!** For abstract classes name of extended class or name of child class must contents word `Abstract` (Convention over configuration):
 
 ~~~php
 <?php
 public static function initListeners(CMF_Core_Listener $events) {
 	$events->addProxyExtenders(
 		array(
-			'XenForo_DataWriter' => array(
-				array('AddOn_DataWriter_Abstract', 'abstract')
-			)
+			'XenForo_DataWriter' => 'AddOn_DataWriter_Abstract'
 		)
 	);
 }
