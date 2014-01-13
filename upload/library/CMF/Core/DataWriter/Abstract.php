@@ -86,6 +86,10 @@ abstract class CMF_Core_DataWriter_Abstract extends XFCP_CMF_Core_DataWriter_Abs
 
 	public function preSave()
 	{
+		if ($this->_preSaveCalled)
+		{
+			return;
+		}
 		// retrieving from core with remove (only single get)
 		if ($coreFields = CMF_Core_Application::getMerged(CMF_Core_Application::DW_DATA, $this, false, true))
 		{
