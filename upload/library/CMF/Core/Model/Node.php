@@ -10,36 +10,31 @@
  */
 class CMF_Core_Model_Node extends XFCP_CMF_Core_Model_Node
 {
-	protected static $_fieldsCache = array();
 
-	public function unserializeNodeFields(array $node)
+	public function unserializeNodeFields($node)
 	{
-		$core = CMF_Core_Application::getInstance();
-		$cacheKey = 'Node';
+		if (!$this->_isNode($node))
+		{
+			return $node;
+		}
+
 		$nodeClasses = array('XenForo_DataWriter_Node');
 
 		if (isset($node['node_type_id']) && ($nodeType = $this->getNodeTypeById($node['node_type_id'])))
 		{
-			$cacheKey = $nodeType['node_type_id'];
 			$nodeClasses[] = $nodeType['datawriter_class'];
 		}
-		if (empty(self::$_fieldsCache[$cacheKey]))
-		{
-			self::$_fieldsCache[$cacheKey] = $core->get(CMF_Core_Application::DW_FIELDS, $nodeClasses);
-		}
-		return $core->unserialize($node, self::$_fieldsCache[$cacheKey]);
+		return CMF_Core_Application::unserializeDataByKey($node, $nodeClasses);
 	}
 
 	public function getNodeById($nodeId, array $fetchOptions = array())
 	{
-		$node = parent::getNodeById($nodeId, $fetchOptions);
-		return is_array($node) ? $this->unserializeNodeFields($node) : $node;
+		return $this->unserializeNodeFields(parent::getNodeById($nodeId, $fetchOptions));
 	}
 
 	public function getNodeByName($nodeName, $nodeTypeId, array $fetchOptions = array())
 	{
-		$node = parent::getNodeByName($nodeName, $nodeTypeId, $fetchOptions);
-		return is_array($node) ? $this->unserializeNodeFields($node) : $node;
+		return $this->unserializeNodeFields(parent::getNodeByName($nodeName, $nodeTypeId, $fetchOptions));
 	}
 
 	public function prepareNodeForAdmin(array $node)

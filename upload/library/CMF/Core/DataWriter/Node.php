@@ -5,8 +5,6 @@
  *
  * @package CMF_Core
  * @author  Yoskaldyr <yoskaldyr@gmail.com>
- * @version 1000011 $Id$
- * @since   1000011
  *
  * @method array getUnserialize($key, $onlyArray = false)
  * @method boolean _validateSerializedArray(&$data)
@@ -15,25 +13,6 @@
 class CMF_Core_DataWriter_Node extends XFCP_CMF_Core_DataWriter_Node
 {
 	protected $_currentNodeType = false;
-
-	protected function _getFields()
-	{
-		$dwFields = parent::_getFields();
-		$classes = array('XenForo_DataWriter_Node');
-		if ($nodeType = $this->getNodeType())
-		{
-			$classes[] = $nodeType['datawriter_class'];
-		}
-		if ($dwCoreFields = CMF_Core_Application::getInstance()->get(
-			CMF_Core_Application::DW_FIELDS,
-			$classes
-		))
-		{
-			$dwFields = XenForo_Application::mapMerge($dwFields, $dwCoreFields);
-		}
-
-		return $dwFields;
-	}
 
 	/**
 	 * Post Save for handling reset child nodes data
@@ -49,7 +28,7 @@ class CMF_Core_DataWriter_Node extends XFCP_CMF_Core_DataWriter_Node
 				($extra = $this->getExtraData(CMF_Core_Application::DW_EXTRA))
 				&& !empty($extra['cmf_reset'])
 				&& is_array($extra['cmf_reset'])
-				&& ($dwData = CMF_Core_Application::getInstance()->get(CMF_Core_Application::DW_DATA, $typeName, true))
+				&& ($dwData = CMF_Core_Application::getMerged(CMF_Core_Application::DW_DATA, $typeName, true, true))
 			)
 			{
 				$resetFields = $extra['cmf_reset'];

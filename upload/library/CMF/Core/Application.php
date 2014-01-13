@@ -5,16 +5,177 @@
  *
  * @package CMF_Core
  * @author Yoskaldyr <yoskaldyr@gmail.com>
- * @version 1000011 $Id$
- * @since   1000011
  */
-class CMF_Core_Application
+class CMF_Core_Application extends XenForo_Application
 {
+	/**
+	 * Constant for input fields.  Use this for string input.
+	 *
+	 * @var string
+	 */
+	const STRING = 'string';
+
+	/**
+	 * Constant for input fields.  Use this for numeric input.
+	 *
+	 * @var string
+	 */
+	const NUM = 'num';
+
+	/**
+	 * Constant for input fields.  Use this for unsigned numeric input.
+	 *
+	 * @var string
+	 */
+	const UNUM = 'unum';
+
+	/**
+	 * Constant for input fields.  Use this for integer input.
+	 *
+	 * @var string
+	 */
+	const INT = 'int';
+
+	/**
+	 * Constant for input fields.  Use this for unsigned integer input.
+	 *
+	 * @var string
+	 */
+	const UINT = 'uint';
+
+	/**
+	 * Constant for input fields.  Use this for floating point number input.
+	 *
+	 * @var string
+	 */
+	const FLOAT = 'float';
+
+	/**
+	 * Constant for input fields.  Use this for boolean fields.
+	 *
+	 * @var string
+	 */
+	const BOOLEAN = 'boolean';
+
+	/**
+	 * Constant for input fields.  Use this for binary input.
+	 *
+	 * @var string
+	 */
+	const BINARY = 'binary';
+
+	/**
+	 * Constant for input fields.  Use this for array input.
+	 *
+	 * @var string
+	 */
+	const ARRAY_SIMPLE = 'array_simple';
+
+	/**
+	 * Constant for input fields.  Use this for json array input.
+	 *
+	 * @var string
+	 */
+	const JSON_ARRAY = 'json_array';
+
+	/**
+	 * Constant for input fields.  Use this for date/time input.
+	 *
+	 * @var string
+	 */
+	const DATE_TIME = 'dateTime';
+
+	/**
+	 * Constant for data fields (datawriter).  Use this for 0/1 boolean integer fields.
+	 *
+	 * @var string
+	 */
+	const TYPE_BOOLEAN = 'boolean';
+
+	/**
+	 * Constant for data fields (datawriter).  Use this for string fields. String fields are assumed
+	 * to be UTF-8 and limits will refer to characters.
+	 *
+	 * @var string
+	 */
+	const TYPE_STRING = 'string';
+
+	/**
+	 * Constant for data fields (datawriter).  Use this for binary or ASCII-only fields. Limits
+	 * will refer to bytes.
+	 *
+	 * @var string
+	 */
+	const TYPE_BINARY = 'binary';
+
+	/**
+	 * Constant for data fields (datawriter).  Use this for integer fields. Limits can be applied
+	 * on the range of valid values.
+	 *
+	 * @var string
+	 */
+	const TYPE_INT = 'int';
+
+	/**
+	 * Constant for data fields (datawriter).  Use this for unsigned integer fields. Negative values
+	 * will always fail to be valid. Limits can be applied on the range of valid values.
+	 *
+	 * @var string
+	 */
+	const TYPE_UINT = 'uint';
+
+	/**
+	 * Constant for data fields (datawriter).  Use this for unsigned integer fields. This differs from
+	 * TYPE_UINT in that negative values will be silently cast to 0. Limits can be
+	 * applied on the range of valid values.
+	 *
+	 * @var string
+	 */
+	const TYPE_UINT_FORCED = 'uint_forced';
+
+	/**
+	 * Constant for data fields (datawriter).  Use this for float fields. Limits can be applied
+	 * on the range of valid values.
+	 *
+	 * @var string
+	 */
+	const TYPE_FLOAT = 'float';
+
+	/**
+	 * Constant for data fields (datawriter). Data is serialized. Ensures that if the data is not a string, it is serialized to ne.
+	 *
+	 * @var string
+	 */
+	const TYPE_SERIALIZED = 'serialized';
+
+	/**
+	 * Constant for data fields (datawriter). Data is serialized to JSON.
+	 *
+	 * @var string
+	 */
+	const TYPE_JSON = 'json';
+
+	/**
+	 * Constant for data fields (datawriter). Use this for fields that have a type that cannot be
+	 * known statically. Use this sparingly, as you must write code to ensure that
+	 * the value is a scalar before it is inserted into the DB. The behavior if you
+	 * don't do this is not defined!
+	 *
+	 * @var string
+	 */
+	const TYPE_UNKNOWN = 'unknown';
+
 	/**
 	 * Constant key for storing
 	 * input filters definitions
 	 */
 	const INPUT_FIELDS = 'inputFields';
+
+	/**
+	 * Constant key for storing
+	 * input action definitions
+	 */
+	const INPUT_ACTIONS = 'inputActions';
 
 	/**
 	 * Constant key for storing
@@ -35,107 +196,99 @@ class CMF_Core_Application
 	const DW_EXTRA = 'cmfExtraInputData';
 
 	/**
-	 * Instance manager.
-	 *
-	 * @var CMF_Core_Application
-	 */
-	private static $_instance;
-
-	/**
 	 * CMF_Core application registry store
 	 *
 	 * @var array
 	 */
-	private $_data = array();
+	private static $_data = array();
+
+	/**
+	 * CMF_Core application DW fields cache
+	 *
+	 * @var array
+	 */
+	private static $_fieldsCache = array();
 
 	/**
 	 * Global trigger for enable/disable CMF_Core
 	 * @var bool
 	 */
-	public $enabled = false;
+	public static $enabled = false;
 
-	/**
-	 * @var bool|string Variable for saving class names
-	 *
-	 * */
-	public $lastResolved = false;
-
-	/**
-	 * Gets the CMF Core instance.
-	 *
-	 * @return CMF_Core_Application
-	 */
-	public static final function getInstance()
-	{
-		if (!self::$_instance)
-		{
-			self::$_instance = new self();
-		}
-
-		return self::$_instance;
-	}
-
-	/**
-	 * Instance manager. Loaded on init_dependencies event
-	 *
-	 * @var CMF_Core_Application
-	 */
-	public function __construct()
-	{
-		if (CMF_Core_Listener::$enabled)
-		{
-			$this->enabled = true;
-			XenForo_CodeEvent::fire('init_application', array($this));
-		}
-	}
+	public static $dwDefinitions = array(
+		'XenForo_DataWriter_Discussion_Thread' => array(
+		    'table' => 'xf_thread',
+		    'key' => 'thread_id',
+		    'alias' => 'thread'
+		),
+		'XenForo_DataWriter_DiscussionMessage_Post' => array(
+			'table' => 'xf_post',
+			'key' => 'post_id',
+			'alias' => 'post'
+		),
+		'XenForo_DataWriter_Forum' => array(
+			'dwKey' => array('XenForo_DataWriter_Node', 'XenForo_DataWriter_Forum'),
+			'table' => array('xf_node', 'xf_forum'),
+			'key' => 'node_id',
+		    'alias' => 'node'
+		)
+	);
 
 	/**
 	 * Gets data from core application registry by key and type/class/classname
 	 *
 	 * @param string              $key    Key for Data
-	 * @param string|array|object $type   SubType (if array returned merged result)
+	 * @param string|array|object $class  SubType (if array returned merged result)
 	 * @param boolean             $remove Remove key after get
+	 * @param bool                $searchParents
 	 *
 	 * @return array
 	 *
-	 * */
-	public function get($key, $type, $remove = false)
+	 */
+	public static function getMerged($key, $class, $remove = false, $searchParents = false)
 	{
-		if ($this->enabled && $type && $key && !empty($this->_data[$key]))
+		if (self::$enabled && $class && $key && !empty(self::$_data[$key]))
 		{
 			//if merged result
-			if (is_array($type))
+			if (is_array($class))
 			{
 				$merged = array();
-				foreach ($type as $typeItem)
+				foreach ($class as $typeItem)
 				{
-					$merged = XenForo_Application::mapMerge($merged, $this->get($key, $typeItem, $remove));
+					$merged = XenForo_Application::mapMerge($merged, self::getMerged($key, $typeItem, $remove, $searchParents));
 				}
 				return $merged;
 			}
-			else if (is_object($type))
+			else if (is_object($class) || $searchParents)
 			{
 				$merged = array();
-				foreach ($this->_data[$key] as $className => $classData)
+				if ($originalClassName = self::resolveOriginalClassName($class))
 				{
-					if ($type instanceof $className)
+					$classList = array($originalClassName => $originalClassName);
+					if ($parents = class_parents($originalClassName))
 					{
-						$merged = XenForo_Application::mapMerge($merged, $classData);
-						if ($remove)
+						$classList = array_merge(array_reverse($parents, true), $classList);
+					}
+					foreach ($classList as $className)
+					{
+						if (isset(self::$_data[$key][$className]))
 						{
-							$this->_data[$key][$className] = array();
+							$merged = XenForo_Application::mapMerge($merged, self::$_data[$key][$className]);
+							if ($remove)
+							{
+								self::$_data[$key][$className] = array();
+							}
 						}
-						$this->lastResolved = $className;
 					}
 				}
 				return $merged;
 			}
-			else if (isset($this->_data[$key][$type]))
+			else if (isset(self::$_data[$key][$class]))
 			{
-				$return = $this->_data[$key][$type];
+				$return = self::$_data[$key][$class];
 				if ($remove)
 				{
-					$this->_data[$key][$type] = array();
+					self::$_data[$key][$class] = array();
 				}
 				return $return;
 			}
@@ -144,26 +297,40 @@ class CMF_Core_Application
 	}
 
 	/**
+	 * Gets data from core application registry by key for all type/class/classname
+	 *
+	 * @param string              $key       Key for Data
+	 *
+	 * @return array
+	 *
+	 * */
+	public static function getFullKey($key)
+	{
+		return (self::$enabled && $key && !empty(self::$_data[$key])) ? self::$_data[$key] : array();
+	}
+
+	/**
 	 * Save data to core application registry by key and type/classname
 	 *
-	 * @param string $key    Key for Data
-	 * @param string $type   SubType or Class name
-	 * @param array  $data   Data to save
+	 * @param string $key       Key for Data
+	 * @param string $className SubType or Class name
+	 * @param array  $data      Data to save
+	 * @param bool   $recursiveMerge Merge method array_merge_recursive (true) or XenForo_Application::mapMerge (false)
 	 *
 	 * @return array
 	 */
 
-	public function set($key, $type, array $data)
+	public static function setMerged($key, $className, array $data, $recursiveMerge = false)
 	{
-		if ($this->enabled && $type && $key && $data)
+		if (self::$enabled && $className && $key && $data)
 		{
-			if ($typeName = $this->resolveTypeName($type, $key))
+			if ($typeName = self::resolveOriginalClassName($className))
 			{
-				if (!isset($this->_data[$key][$typeName]))
+				if (!isset(self::$_data[$key][$typeName]))
 				{
-					$this->_data[$key][$typeName] = array();
+					self::$_data[$key][$typeName] = array();
 				}
-				$this->_data[$key][$typeName] = XenForo_Application::mapMerge($this->_data[$key][$typeName], $data);
+				self::$_data[$key][$typeName] = ($recursiveMerge) ? array_merge_recursive(self::$_data[$key][$typeName], $data) : XenForo_Application::mapMerge(self::$_data[$key][$typeName], $data);
 			}
 		}
 	}
@@ -171,48 +338,37 @@ class CMF_Core_Application
 	/**
 	 * Clears data in core application registry by key or type/class/classname
 	 *
-	 * @param string              $key    Key for Data
-	 * @param string|array|object $type   Single type (type/class/class name)
-	 *                                    or array of types to clear
+	 * @param string              $key       Key for Data
+	 * @param string|array|object $className Single type (type/class/class name)
+	 *                                       or array of types to clear
 	 */
 
-	public function clear($key='', $type='')
+	public static function clearMerged($key='', $className='')
 	{
-		if (!$this->enabled)
+		if (!self::$enabled)
 		{
 			return;
 		}
 		else if (!$key)
 		{
-			$this->_data=array();
+			self::$_data=array();
 		}
-		else if (!$type)
+		else if (!$className)
 		{
-			$this->_data[$key]=array();
+			self::$_data[$key]=array();
 		}
 		//if group clear
-		else if (is_array($type))
+		else if (is_array($className))
 		{
-			foreach ($type as $typeItem)
+			foreach ($className as $typeItem)
 			{
-				$this->clear($key, $typeItem);
+				self::clearMerged($key, $typeItem);
 			}
 			return;
 		}
-		else if (is_object($type))
+		else if ($typeName = self::resolveOriginalClassName($className))
 		{
-			foreach ($this->_data[$key] as $className => $classData)
-			{
-				if ($type instanceof $className)
-				{
-					$this->_data[$key][$className] = array();
-				}
-			}
-			return;
-		}
-		else if ($typeName = $this->resolveTypeName($type, $key))
-		{
-			$this->_data[$key][$typeName] = array();
+			self::$_data[$key][$typeName] = array();
 		}
 	}
 
@@ -224,7 +380,7 @@ class CMF_Core_Application
 	 *
 	 * @return array returns data with unserialized fields
 	 */
-	public function unserialize($data, $dwFields)
+	public static function unserializeDataByFields($data, $dwFields)
 	{
 		if ($data && $dwFields && is_array($data) && is_array($dwFields))
 		{
@@ -232,7 +388,7 @@ class CMF_Core_Application
 			{
 				foreach ($fields as $fieldName => $fieldOptions)
 				{
-					if (is_array($fieldOptions) && isset($fieldOptions['type']) && $fieldOptions['type'] == XenForo_DataWriter::TYPE_SERIALIZED)
+					if (is_array($fieldOptions) && isset($fieldOptions['type']) && $fieldOptions['type'] == self::TYPE_SERIALIZED)
 					{
 						if (empty($data[$fieldName]))
 						{
@@ -249,47 +405,89 @@ class CMF_Core_Application
 		return $data;
 	}
 
+	public static function unserializeDataByKey($data, $key, $useCache = true)
+	{
+		if ($data && $key && is_array($data))
+		{
+			$cacheKey = (is_array($key)) ? implode('/', $key) : $key;
+			$dwFields = ($useCache && isset(self::$_fieldsCache[$cacheKey])) ? self::$_fieldsCache[$cacheKey] : self::getMerged(self::DW_FIELDS, $key);
+			if ($useCache && !isset(self::$_fieldsCache[$cacheKey]))
+			{
+				self::$_fieldsCache[$cacheKey] = $dwFields;
+			}
+
+			return ($dwFields && is_array($dwFields)) ? self::unserializeDataByFields($data, $dwFields) : $data;
+		}
+		return $data;
+	}
+
 	/**
 	 * Type name normalizer. Resolves type name by keys array or core registry
-	 * @param  string|array|object  $type Type to resolve
-	 * @param  mixed                $keys Key or array of keys to compare. If null registry used
+	 * @param  string|array|object  $class Class name / Type to resolve
 	 *
 	 * @return boolean|string       Returns type name as string if success
 	 */
-	public function resolveTypeName($type, $keys = null)
+	public static function resolveOriginalClassName($class)
 	{
-		$this->lastResolved = false;
-		if (!$type)
+		if (!$class || (!is_object($class) && !is_string($class)))
 		{
 			return false;
 		}
-		else if (!is_object($type))
+		$className = is_object($class) ? get_class($class) : $class;
+
+		return ($original = array_search($className, parent::$_classCache, true)) ? $original : $className;
+	}
+
+	public static function prepareFetchOptions(array $fetchOptions, $dwClass)
+	{
+		if (!isset($fetchOptions['selectFields'], $fetchOptions['joinTables'], self::$dwDefinitions[$dwClass]))
 		{
-			return is_string($type) ? $type : false;
+			return $fetchOptions;
 		}
-		else if (!$keys)
+		$alias = self::$dwDefinitions[$dwClass]['alias'];
+		$tableName = self::$dwDefinitions[$dwClass]['table'];
+		$primaryField = self::$dwDefinitions[$dwClass]['key'];
+		$dwKey = (isset(self::$dwDefinitions[$dwClass]['dwKey'])) ? self::$dwDefinitions[$dwClass]['dwKey'] : $dwClass;
+
+		//we can't use auto find parents :(
+		$dwCoreFields = self::getMerged(
+			self::DW_FIELDS,
+			$dwKey
+		);
+
+		if (is_array($tableName))
 		{
-			//searching all core registry
-			$keys=array_keys($this->_data);
-		}
-		else if (!is_array($keys))
-		{
-			$keys = array($keys);
-		}
-		foreach ($keys as $key)
-		{
-			if (isset($this->_data[$key]) && is_array($this->_data[$key]))
+			foreach ($tableName as $name)
 			{
-				foreach ($this->_data[$key] as $className => $classData)
+				unset($dwCoreFields[$name]);
+			}
+		}
+		else
+		{
+			unset($dwCoreFields[$tableName]);
+		}
+
+		if ($dwCoreFields && is_array($dwCoreFields))
+		{
+			if (!$primaryField)
+			{
+				$primaryField = $alias . '_id';
+			}
+			foreach ($dwCoreFields as $table => $fields)
+			{
+				unset($fields[$primaryField]);
+				if ($fields && is_array($fields))
 				{
-					if ($type instanceof $className)
-					{
-						$this->lastResolved = $className;
-						return $className;
-					}
+					$fetchOptions['selectFields'] .= ',
+					' . $table . '.' . implode(', ' . $table . '.', $fields);
+
+					$fetchOptions['joinTables'] .= '
+					LEFT JOIN ' . $table . ' AS ' . $table . ' ON
+							(' . $alias . '.' . $primaryField . ' = ' . $table . '.' . $primaryField . ')';
 				}
 			}
 		}
-		return false;
+
+		return $fetchOptions;
 	}
 }

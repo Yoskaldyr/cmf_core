@@ -10,41 +10,15 @@
  */
 class CMF_Core_Model_Post extends XFCP_CMF_Core_Model_Post
 {
-
-	/**
-	 * Checks the 'join' key of the incoming array for the presence of the FETCH_x bitfields in this class
-	 * and returns SQL snippets to join the specified tables if required
-	 *
-	 * @param array $fetchOptions containing a 'join' integer key build from this class's FETCH_x bitfields
-	 *
-	 * @return array Containing 'selectFields' and 'joinTables' keys. Example: selectFields = ', user.*, foo.title'; joinTables = ' INNER JOIN foo ON (foo.id = other.id) '
-	 */
 	public function preparePostJoinOptions(array $fetchOptions)
 	{
 		$postFetchOptions = parent::preparePostJoinOptions($fetchOptions);
-		$dwCoreFields = CMF_Core_Application::getInstance()->get(
-			CMF_Core_Application::DW_FIELDS,
-			'XenForo_DataWriter_DiscussionMessage_Post'
-		);
 
-		unset($dwCoreFields['xf_post']);
-		if ($dwCoreFields && is_array($dwCoreFields))
-		{
-			foreach ($dwCoreFields as $table => $fields)
-			{
-				unset($fields['post_id']);
-				if ($fields && is_array($fields))
-				{
-					$postFetchOptions['selectFields'] .= ',
-					' . $table . '.' . implode(', ' . $table . '.', $fields);
+		return CMF_Core_Application::prepareFetchOptions($postFetchOptions, 'XenForo_DataWriter_DiscussionMessage_Post');
+	}
 
-					$postFetchOptions['joinTables'] .= '
-					LEFT JOIN ' . $table . ' AS ' . $table . ' ON
-							(post.post_id = ' . $table . '.post_id)';
-				}
-			}
-		}
-
-		return $postFetchOptions;
+	public function preparePost(array $post, array $thread, array $forum, array $nodePermissions = null, array $viewingUser = null)
+	{
+		return CMF_Core_Application::unserializeDataByKey($post, 'XenForo_DataWriter_DiscussionMessage_Post');
 	}
 }

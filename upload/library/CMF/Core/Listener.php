@@ -97,7 +97,7 @@ class CMF_Core_Listener extends XenForo_CodeEvent
 	 */
 	public function getXenForoListeners()
 	{
-		return ($return = XenForo_CodeEvent::$_listeners) ? $return : array();
+		return ($return = parent::$_listeners) ? $return : array();
 	}
 
 	/**
@@ -110,6 +110,7 @@ class CMF_Core_Listener extends XenForo_CodeEvent
 	public function prepareDynamicListeners()
 	{
 		$listeners = array();
+		//extenders
 		foreach (self::$_extendInput as $type => $extend)
 		{
 			if ($extend && isset(self::$_extendTypes[$type]))
@@ -127,6 +128,18 @@ class CMF_Core_Listener extends XenForo_CodeEvent
 			}
 		}
 		self::$_extendInput = array();
+
+		//controller input actions
+		$controllers = CMF_Core_Application::getFullKey(CMF_Core_Application::INPUT_ACTIONS);
+		foreach ($controllers as $className => $value)
+		{
+			if (!isset($listeners['controller_pre_dispatch'][$className]))
+			{
+				$listeners['controller_pre_dispatch'][$className] = array(
+					array('CMF_Core_Listener', 'controllerPreDispatch')
+				);
+			}
+		}
 
 		return $listeners;
 	}
@@ -326,7 +339,7 @@ class CMF_Core_Listener extends XenForo_CodeEvent
 	 * Core event listener - must be first in the queue in XenForo Admin CP
 	 *
 	 * !!!WARNING!!! XenForo not fully loaded at this time.
-	 * Only for setup event listeners by CMF_Core_Listener methods
+	 * Only for setup event listeners by CMF_Core_Listener and CMF_Core_Application methods
 	 *
 	 * @param CMF_Core_Listener $events - Core listener class instance
 	 */
@@ -337,8 +350,6 @@ class CMF_Core_Listener extends XenForo_CodeEvent
 		$events->addExtenders(
 			array(
 			     //datawriters
-			     'XenForo_DataWriter_Discussion_Thread'      => 'CMF_Core_DataWriter_Thread',
-			     'XenForo_DataWriter_DiscussionMessage_Post' => 'CMF_Core_DataWriter_Post',
 			     'XenForo_DataWriter_Node'                   => 'CMF_Core_DataWriter_Node',
 			     'XenForo_DataWriter_Forum'                  => 'CMF_Core_DataWriter_Node',
 			     'XenForo_DataWriter_Page'                   => 'CMF_Core_DataWriter_Node',
@@ -349,10 +360,6 @@ class CMF_Core_Listener extends XenForo_CodeEvent
 			     'XenForo_Model_Post'                        => 'CMF_Core_Model_Post',
 			     'XenForo_Model_Node'                        => 'CMF_Core_Model_Node',
 			     'XenForo_Model_Forum'                       => 'CMF_Core_Model_Forum',
-			     //controllers
-			     'XenForo_ControllerPublic_Forum'            => 'CMF_Core_ControllerPublic_Forum',
-			     'XenForo_ControllerPublic_Thread'           => 'CMF_Core_ControllerPublic_Thread',
-			     'XenForo_ControllerPublic_Post'             => 'CMF_Core_ControllerPublic_Post'
 			)
 		);
 		$events->addProxyExtenders(
@@ -361,24 +368,67 @@ class CMF_Core_Listener extends XenForo_CodeEvent
 			     'XenForo_ControllerAdmin_NodeAbstract' => 'CMF_Core_ControllerAdmin_NodeAbstract'
 			)
 		);
+		/*
+		$events->configureInput('XenForo_DataWriter_Discussion_Thread', array(
+			'some_field' => CMF_Core_Application::ARRAY_SIMPLE
+		), 'XenForo_ControllerPublic_Forum', 'AddThread');
+
+		$events->configureInput('XenForo_DataWriter_DiscussionMessage_Post', array(
+			'some_field' => CMF_Core_Application::ARRAY_SIMPLE
+		), 'XenForo_ControllerPublic_Post', 'Save');
+
+		$events->configureInput('XenForo_DataWriter_Discussion_Thread', array(
+			'some_field' => CMF_Core_Application::ARRAY_SIMPLE
+		), 'XenForo_ControllerPublic_Thread', 'Save');
+		*/
 	}
 
 	/**
-	 * Init Dependencies event listener.
-	 * Called when the dependency manager loads its default data.
-	 * This event is fired on virtually every page and is the first thing you can plug into.
-	 * And this callback is fired first of all callbacks with options class loaded
+	 * controller_pre_dispatch listener
 	 *
-	 * Instantiating CMF_Core
-	 * and firing init_application event (inside CMF_Core_Application::getInstance())
-	 *
-	 * @param XenForo_Dependencies_Abstract $dependencies
-	 * @param array                         $data
+	 * @param XenForo_Controller $controller
+	 * @param string             $action
+	 * @param string             $controllerName
 	 */
-	public static function initDependencies(/** @noinspection PhpUnusedParameterInspection */ XenForo_Dependencies_Abstract $dependencies, array $data)
+	public static function controllerPreDispatch(XenForo_Controller $controller, $action, $controllerName)
 	{
-		//first launch if core active
-		CMF_Core_Application::getInstance();
+		$actions = CMF_Core_Application::getMerged(
+			CMF_Core_Application::INPUT_ACTIONS,
+			$controllerName
+		);
+		if (isset($actions[$action]))
+		{
+			$dwClasses = is_array($actions[$action]) ? array_unique($actions[$action]) : array($actions[$action]);
+			foreach ($dwClasses as $dwName)
+			{
+				CMF_Core_Application::setMerged(
+					CMF_Core_Application::DW_DATA,
+					$dwName,
+					$controller->getInput()->filter(CMF_Core_Application::getMerged(CMF_Core_Application::INPUT_FIELDS, $dwName))
+				);
+			}
+		}
+	}
+
+	public function configureDataWriter($dwName, array $fields)
+	{
+		if ($dwName && $fields)
+		{
+			CMF_Core_Application::setMerged(CMF_Core_Application::DW_FIELDS, $dwName, $fields);
+		}
+	}
+
+	public function configureInput($dwName, array $fields, $controllerName = null, $actions = null)
+	{
+		if ($dwName && $fields)
+		{
+			CMF_Core_Application::setMerged(CMF_Core_Application::INPUT_FIELDS, $dwName, $fields);
+			if ($controllerName && $actions)
+			{
+				$actionKeys = is_array($actions) ? array_fill_keys($actions, $dwName) : array($actions => $dwName);
+				CMF_Core_Application::setMerged(CMF_Core_Application::INPUT_ACTIONS, $controllerName, $actionKeys, true);
+			}
+		}
 	}
 
 	/**

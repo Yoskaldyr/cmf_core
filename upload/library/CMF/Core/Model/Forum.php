@@ -22,30 +22,7 @@ class CMF_Core_Model_Forum extends XFCP_CMF_Core_Model_Forum
 	public function prepareForumJoinOptions(array $fetchOptions)
 	{
 		$forumFetchOptions = parent::prepareForumJoinOptions($fetchOptions);
-		$dwCoreFields = CMF_Core_Application::getInstance()->get(
-			CMF_Core_Application::DW_FIELDS,
-			array('XenForo_DataWriter_Node', 'XenForo_DataWriter_Forum')
-		);
-
-		unset($dwCoreFields['xf_forum'], $dwCoreFields['xf_node']);
-		if ($dwCoreFields && is_array($dwCoreFields))
-		{
-			foreach ($dwCoreFields as $table => $fields)
-			{
-				unset($fields['node_id']);
-				if ($fields && is_array($fields))
-				{
-					$forumFetchOptions['selectFields'] .= ',
-					' . $table . '.' . implode(', ' . $table . '.', $fields);
-
-					$forumFetchOptions['joinTables'] .= '
-					LEFT JOIN ' . $table . ' AS ' . $table . ' ON
-							(node.node_id = ' . $table . '.node_id)';
-				}
-			}
-		}
-
-		return $forumFetchOptions;
+		return CMF_Core_Application::prepareFetchOptions($forumFetchOptions, 'XenForo_DataWriter_Forum');
 	}
 
 	public function prepareForum(array $forum)

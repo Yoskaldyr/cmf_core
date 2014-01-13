@@ -10,10 +10,83 @@
  */
 abstract class CMF_Core_DataWriter_Abstract extends XFCP_CMF_Core_DataWriter_Abstract
 {
+	/**
+	 * Constructor. (changing _getFields() method)
+	 *
+	 * @param integer $errorHandler   Error handler. See {@link ERROR_EXCEPTION} and related.
+	 * @param array|null Dependency injector. Array keys available: db, cache.
+	 */
+	public function __construct($errorHandler = self::ERROR_ARRAY, array $inject = null)
+	{
+		$this->_db = (isset($inject['db']) ? $inject['db'] : XenForo_Application::getDb());
+
+		if (isset($inject['cache']))
+		{
+			$this->_cache = $inject['cache'];
+		}
+
+		$this->setErrorHandler($errorHandler);
+
+		$fields = $this->_getFieldsCMF();
+
+		if (is_array($fields))
+		{
+			$this->_fields = $fields;
+		}
+
+		$options = $this->_getDefaultOptions();
+		if (is_array($options))
+		{
+			$this->_options = $options;
+		}
+	}
+
+	protected function _getFieldsCMF()
+	{
+		$fields = $this->_getFields();
+		if ($dwCoreFields = CMF_Core_Application::getMerged(CMF_Core_Application::DW_FIELDS, $this, false, true))
+		{
+			$fields = XenForo_Application::mapMerge($fields, $dwCoreFields);
+		}
+		return $fields;
+	}
+
+	public function getFields()
+	{
+		return $this->_getFieldsCMF();
+	}
+
+	public function getFieldNames($tableName = null)
+	{
+		$tables = $this->_getFieldsCMF();
+
+		if (!empty($tableName))
+		{
+			if (empty($tables[$tableName]))
+			{
+				$this->error("No fields are defined for table '{$tableName}'.");
+			}
+
+			return array_keys($tables[$tableName]);
+		}
+
+		$fieldNames = array();
+
+		foreach ($tables AS $fields)
+		{
+			foreach ($fields AS $fieldName => $fieldInfo)
+			{
+				$fieldNames[] = $fieldName;
+			}
+		}
+
+		return array_unique($fieldNames);
+	}
+
 	public function preSave()
 	{
 		// retrieving from core with remove (only single get)
-		if ($coreFields = CMF_Core_Application::getInstance()->get(CMF_Core_Application::DW_DATA, $this))
+		if ($coreFields = CMF_Core_Application::getMerged(CMF_Core_Application::DW_DATA, $this, false, true))
 		{
 			$extraFields = array();
 			//manual fieldname search not buggy $this->getFieldNames()

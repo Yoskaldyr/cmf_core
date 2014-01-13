@@ -19,6 +19,7 @@ class CMF_Core_Autoloader extends XenForo_Autoloader
 	 * @var CMF_Core_Listener
 	 */
 	protected $_events = null;
+
 	/**
 	 * Path to directory containing the application's library.
 	 *
@@ -50,46 +51,31 @@ class CMF_Core_Autoloader extends XenForo_Autoloader
 	/**
 	 * On autoload this class init_listeners event will be fired.
 	 *
-	 * @var string
-	 */
-	protected $_initListenersClass = 'XenForo_Options';
-
-	/**
-	 * On autoload this class init_listeners event will be fired.
-	 *
 	 * @var bool
 	 */
 	protected $_initListenersFired = false;
 
-	/**
-	 * Public setter for _initListenersClass
-	 *
-	 * @param string $class
-	 * @return $this
-	 */
-	public function setInitClass($class = '')
-	{
-		$this->_initListenersClass = (string) $class;
-		return $this;
-	}
-
 	protected function _fireInitListeners()
 	{
-		if (!$this->_initListenersFired)
+		$events = $this->_events;
+		//checks for core addon enabled
+		if (isset($events->listeners['init_listeners']['CMF_Core_Listener'][0][0])
+			&& $events->listeners['init_listeners']['CMF_Core_Listener'][0][0] == 'CMF_Core_Listener')
 		{
-			$events = CMF_Core_Listener::getInstance();
-			XenForo_CodeEvent::fire('init_listeners', array($events));
-			unset($events->listeners['init_listeners']);
+			array_unshift($events->listeners['init_listeners']['_'], $events->listeners['init_listeners']['CMF_Core_Listener'][0]);
+			unset($events->listeners['init_listeners']['CMF_Core_Listener'][0]);
 
+			XenForo_CodeEvent::fire('init_listeners', array($events));
+
+			unset($events->listeners['init_listeners']);
 			$events->listeners = array_merge_recursive(
-				array('init_dependencies' => array(
-					array('CMF_Core_Listener', 'initDependencies')
-				)),
 				$events->prepareDynamicListeners(),
 				$events->listeners
 			);
-			$this->_events = $events;
-			$this->_initListenersFired = true;
+		}
+		else
+		{
+			unset($events->listeners['init_listeners']);
 		}
 	}
 
@@ -146,6 +132,10 @@ class CMF_Core_Autoloader extends XenForo_Autoloader
 			$newInstance = new self();
 			$newInstance->setupAutoloader($instance->getRootDir());
 			XenForo_Autoloader::setInstance($newInstance);
+			//autoload not working yet
+			include(dirname(__FILE__) . '/Listener.php');
+			$newInstance->_events = CMF_Core_Listener::getInstance();
+
 			return $newInstance;
 		}
 		return $instance;
@@ -171,8 +161,10 @@ class CMF_Core_Autoloader extends XenForo_Autoloader
 	 */
 	public function autoload($class)
 	{
-		if ($class == $this->_initListenersClass)
+		//first class load after xenforo listeners load
+		if (!$this->_initListenersFired && isset($this->_events->listeners['init_listeners']['CMF_Core_Listener'][0][0]))
 		{
+			$this->_initListenersFired = true;
 			$this->_fireInitListeners();
 		}
 

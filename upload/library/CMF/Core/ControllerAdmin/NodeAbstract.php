@@ -4,14 +4,11 @@
  *
  * @package CMF_Core
  * @author  Yoskaldyr <yoskaldyr@gmail.com>
- * @version 1000011 $Id$
- * @since   1000011
  *
  * @method CMF_Core_Model_Node _getNodeModel()
  */
 abstract class CMF_Core_ControllerAdmin_NodeAbstract extends XFCP_CMF_Core_ControllerAdmin_NodeAbstract
 {
-
 	/**
 	 * One of the pre-dispatch behaviors for the whole set of admin controllers.
 	 * but only for node sub classes
@@ -22,14 +19,15 @@ abstract class CMF_Core_ControllerAdmin_NodeAbstract extends XFCP_CMF_Core_Contr
 
 		if (($nodeType = $this->_getNodeType()) && $action == 'Save')
 		{
-			$core = CMF_Core_Application::getInstance();
-			$inputFields = $core->get(
+			$inputFields = CMF_Core_Application::getMerged(
 				CMF_Core_Application::INPUT_FIELDS,
-				array('XenForo_DataWriter_Node', $nodeType['datawriter_class'])
+				array($nodeType['datawriter_class']),
+				//todo remove 'remove flag'
+				false, true
 			);
 			$inputFields['cmf_reset'] = XenForo_Input::ARRAY_SIMPLE;
 
-			$core->set(
+			CMF_Core_Application::setMerged(
 				CMF_Core_Application::DW_DATA,
 				$nodeType['datawriter_class'],
 				$this->_input->filter($inputFields)

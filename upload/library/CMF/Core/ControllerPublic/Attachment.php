@@ -11,6 +11,8 @@
 
 /**
  * Extends XenForo_ControllerPublic_Attachment to add some extra functionality
+ *
+ * @method CMF_Core_Model_Attachment _getAttachmentModel
  */
 class CMF_Core_ControllerPublic_Attachment extends XFCP_CMF_Core_ControllerPublic_Attachment
 {
