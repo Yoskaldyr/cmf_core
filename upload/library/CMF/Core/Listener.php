@@ -346,6 +346,7 @@ class CMF_Core_Listener extends XenForo_CodeEvent
 	public static function initListeners(CMF_Core_Listener $events)
 	{
 		self::$enabled = true;
+		CMF_Core_Application::$enabled = true;
 		//Core listeners
 		$events->addExtenders(
 			array(

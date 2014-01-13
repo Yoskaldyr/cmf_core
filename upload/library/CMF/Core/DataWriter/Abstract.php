@@ -39,6 +39,7 @@ abstract class CMF_Core_DataWriter_Abstract extends XFCP_CMF_Core_DataWriter_Abs
 		{
 			$this->_options = $options;
 		}
+		$this->_options[CMF_Core_Application::DW_EXTRA_OPTION] = false;
 	}
 
 	protected function _getFieldsCMF()
@@ -169,6 +170,28 @@ abstract class CMF_Core_DataWriter_Abstract extends XFCP_CMF_Core_DataWriter_Abs
 		return $onlyArray
 			? (is_array($data) ? $data : array())
 			: $data;
+	}
+
+	/**
+	 * Merges the new and existing data to show a "final" view of the data. This will
+	 * generally reflect what is in the database.
+	 *
+	 * If no table is specified, all data will be flattened into one array. New data
+	 * takes priority over existing data, and earlier tables in the list take priority
+	 * over later tables.
+	 *
+	 * @param string $tableName
+	 *
+	 * @return array
+	 */
+	public function getMergedData($tableName = '')
+	{
+		$data = parent::getMergedData($tableName);
+		if (!$tableName && $this->getOption(CMF_Core_Application::DW_EXTRA_OPTION) && ($extra = $this->getExtraData(CMF_Core_Application::DW_EXTRA)))
+		{
+			$data += $extra;
+		}
+		return $data;
 	}
 
 }

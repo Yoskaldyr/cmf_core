@@ -19,6 +19,6 @@ class CMF_Core_Model_Post extends XFCP_CMF_Core_Model_Post
 
 	public function preparePost(array $post, array $thread, array $forum, array $nodePermissions = null, array $viewingUser = null)
 	{
-		return CMF_Core_Application::unserializeDataByKey($post, 'XenForo_DataWriter_DiscussionMessage_Post');
+		return CMF_Core_Application::unserializeDataByKey(parent::preparePost($post, $thread, $forum, $nodePermissions, $viewingUser), 'XenForo_DataWriter_DiscussionMessage_Post');
 	}
 }

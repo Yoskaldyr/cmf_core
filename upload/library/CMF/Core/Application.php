@@ -196,6 +196,11 @@ class CMF_Core_Application extends XenForo_Application
 	const DW_EXTRA = 'cmfExtraInputData';
 
 	/**
+	 * Constant key for datawriter's option
+	 */
+	const DW_EXTRA_OPTION = 'cmfExtraMergedData';
+
+	/**
 	 * CMF_Core application registry store
 	 *
 	 * @var array
