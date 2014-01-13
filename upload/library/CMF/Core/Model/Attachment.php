@@ -55,6 +55,7 @@ class CMF_Core_Model_Attachment extends XFCP_CMF_Core_Model_Attachment
 
 		if ($attachmentHandler && is_callable(array($attachmentHandler, 'getTemplateNameForAttachmentEditor')))
 		{
+			/** @noinspection PhpUndefinedMethodInspection */
 			$templateName = $attachmentHandler->getTemplateNameForAttachmentEditor();
 		}
 
@@ -78,6 +79,7 @@ class CMF_Core_Model_Attachment extends XFCP_CMF_Core_Model_Attachment
 
 		if ($attachmentHandler && is_callable(array($attachmentHandler, 'generateThumbnail')))
 		{
+			/** @noinspection PhpUndefinedMethodInspection */
 			$tempThumbFile = $attachmentHandler->generateThumbnail($file, $dimensions);
 		}
 		else

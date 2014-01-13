@@ -60,6 +60,7 @@ abstract class CMF_Core_Image_Abstract extends XFCP_CMF_Core_Image_Abstract
 				break;
 		}
 
+		/** @noinspection PhpParamsInspection */
 		$this->crop($cropPoint['x'], $cropPoint['y'], $shortSide, $shortSide);
 	}
 }

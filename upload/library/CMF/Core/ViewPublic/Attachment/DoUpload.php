@@ -5,8 +5,6 @@
  *
  * @package CMF_Core
  * @author  pepelac <ar@whiteholemedia.com>
- * @version 1000030 $Id$
- * @since   1000030
  */
 
 class CMF_Core_ViewPublic_Attachment_DoUpload extends XFCP_CMF_Core_ViewPublic_Attachment_DoUpload

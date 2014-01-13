@@ -96,7 +96,7 @@ class CMF_Core_DataWriter_Node extends XFCP_CMF_Core_DataWriter_Node
 		}
 		if ($nodeTypes = $this->_getNodeModel()->getAllNodeTypes())
 		{
-			foreach ($nodeTypes as $nodeTypeId => $nodeType)
+			foreach ($nodeTypes as $nodeType)
 			{
 				if ($this instanceof $nodeType['datawriter_class'])
 				{
