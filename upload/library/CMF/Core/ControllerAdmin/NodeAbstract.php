@@ -22,8 +22,7 @@ abstract class CMF_Core_ControllerAdmin_NodeAbstract extends XFCP_CMF_Core_Contr
 			$inputFields = CMF_Core_Application::getMerged(
 				CMF_Core_Application::INPUT_FIELDS,
 				array($nodeType['datawriter_class']),
-				//todo remove 'remove flag'
-				false, true
+				true
 			);
 			$inputFields['cmf_reset'] = XenForo_Input::ARRAY_SIMPLE;
 

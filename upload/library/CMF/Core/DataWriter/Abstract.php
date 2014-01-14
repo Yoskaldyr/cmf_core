@@ -40,12 +40,13 @@ abstract class CMF_Core_DataWriter_Abstract extends XFCP_CMF_Core_DataWriter_Abs
 			$this->_options = $options;
 		}
 		$this->_options[CMF_Core_Application::DW_EXTRA_OPTION] = false;
+		$this->_options[CMF_Core_Application::DW_ENABLE_OPTION] = true;
 	}
 
 	protected function _getFieldsCMF()
 	{
 		$fields = $this->_getFields();
-		if ($dwCoreFields = CMF_Core_Application::getMerged(CMF_Core_Application::DW_FIELDS, $this, false, true))
+		if ($dwCoreFields = CMF_Core_Application::getMerged(CMF_Core_Application::DW_FIELDS, $this, true))
 		{
 			$fields = XenForo_Application::mapMerge($fields, $dwCoreFields);
 		}
@@ -90,8 +91,8 @@ abstract class CMF_Core_DataWriter_Abstract extends XFCP_CMF_Core_DataWriter_Abs
 		{
 			return;
 		}
-		// retrieving from core with remove (only single get)
-		if ($coreFields = CMF_Core_Application::getMerged(CMF_Core_Application::DW_DATA, $this, false, true))
+		// retrieving from core
+		if ($this->getOption(CMF_Core_Application::DW_ENABLE_OPTION) && ($coreFields = CMF_Core_Application::getMerged(CMF_Core_Application::DW_DATA, $this, true)))
 		{
 			$extraFields = array();
 			//manual fieldname search not buggy $this->getFieldNames()
@@ -191,7 +192,7 @@ abstract class CMF_Core_DataWriter_Abstract extends XFCP_CMF_Core_DataWriter_Abs
 	public function getMergedData($tableName = '')
 	{
 		$data = parent::getMergedData($tableName);
-		if (!$tableName && $this->getOption(CMF_Core_Application::DW_EXTRA_OPTION) && ($extra = $this->getExtraData(CMF_Core_Application::DW_EXTRA)))
+		if (!$tableName && $this->getOption(CMF_Core_Application::DW_ENABLE_OPTION) && $this->getOption(CMF_Core_Application::DW_EXTRA_OPTION) && ($extra = $this->getExtraData(CMF_Core_Application::DW_EXTRA)))
 		{
 			$data += $extra;
 		}

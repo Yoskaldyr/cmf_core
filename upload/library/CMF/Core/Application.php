@@ -201,6 +201,11 @@ class CMF_Core_Application extends XenForo_Application
 	const DW_EXTRA_OPTION = 'cmfExtraMergedData';
 
 	/**
+	 * Constant key for datawriter's option for global enable/disable
+	 */
+	const DW_ENABLE_OPTION = 'cmfEnableDataWriter';
+
+	/**
 	 * CMF_Core application registry store
 	 *
 	 * @var array
@@ -244,13 +249,12 @@ class CMF_Core_Application extends XenForo_Application
 	 *
 	 * @param string              $key    Key for Data
 	 * @param string|array|object $class  SubType (if array returned merged result)
-	 * @param boolean             $remove Remove key after get
 	 * @param bool                $searchParents
 	 *
 	 * @return array
 	 *
 	 */
-	public static function getMerged($key, $class, $remove = false, $searchParents = false)
+	public static function getMerged($key, $class, $searchParents = false)
 	{
 		if (self::$enabled && $class && $key && !empty(self::$_data[$key]))
 		{
@@ -260,7 +264,7 @@ class CMF_Core_Application extends XenForo_Application
 				$merged = array();
 				foreach ($class as $typeItem)
 				{
-					$merged = XenForo_Application::mapMerge($merged, self::getMerged($key, $typeItem, $remove, $searchParents));
+					$merged = XenForo_Application::mapMerge($merged, self::getMerged($key, $typeItem, $searchParents));
 				}
 				return $merged;
 			}
@@ -279,10 +283,6 @@ class CMF_Core_Application extends XenForo_Application
 						if (isset(self::$_data[$key][$className]))
 						{
 							$merged = XenForo_Application::mapMerge($merged, self::$_data[$key][$className]);
-							if ($remove)
-							{
-								self::$_data[$key][$className] = array();
-							}
 						}
 					}
 				}
@@ -291,10 +291,6 @@ class CMF_Core_Application extends XenForo_Application
 			else if (isset(self::$_data[$key][$class]))
 			{
 				$return = self::$_data[$key][$class];
-				if ($remove)
-				{
-					self::$_data[$key][$class] = array();
-				}
 				return $return;
 			}
 		}

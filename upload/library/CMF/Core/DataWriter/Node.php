@@ -24,11 +24,11 @@ class CMF_Core_DataWriter_Node extends XFCP_CMF_Core_DataWriter_Node
 		if ($nodeType = $this->getNodeType())
 		{
 			$typeName = $nodeType['datawriter_class'];
-			if (
-				($extra = $this->getExtraData(CMF_Core_Application::DW_EXTRA))
+			if ($this->getOption(CMF_Core_Application::DW_ENABLE_OPTION)
+				&& ($extra = $this->getExtraData(CMF_Core_Application::DW_EXTRA))
 				&& !empty($extra['cmf_reset'])
 				&& is_array($extra['cmf_reset'])
-				&& ($dwData = CMF_Core_Application::getMerged(CMF_Core_Application::DW_DATA, $typeName, true, true))
+				&& ($dwData = CMF_Core_Application::getMerged(CMF_Core_Application::DW_DATA, $typeName, true))
 			)
 			{
 				$resetFields = $extra['cmf_reset'];
@@ -68,6 +68,8 @@ class CMF_Core_DataWriter_Node extends XFCP_CMF_Core_DataWriter_Node
 
 							// prevent any child updates from occuring - we're handling it here
 							$writer->setOption(XenForo_DataWriter_Node::OPTION_POST_WRITE_UPDATE_CHILD_NODES, false);
+							// prevent any child use input data
+							$writer->getOption(CMF_Core_Application::DW_ENABLE_OPTION, false);
 							if ($extra)
 							{
 								//setting additional settings (can be changed later)
