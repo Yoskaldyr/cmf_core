@@ -6,8 +6,6 @@
  *
  * @package CMF_Core
  * @author Yoskaldyr <yoskaldyr@gmail.com>
- * @version 1000011 $Id$
- * @since 1000011
  */
 class CMF_Core_Autoloader extends XenForo_Autoloader
 {
@@ -53,31 +51,7 @@ class CMF_Core_Autoloader extends XenForo_Autoloader
 	 *
 	 * @var bool
 	 */
-	protected $_initListenersFired = false;
-
-	protected function _fireInitListeners()
-	{
-		$events = $this->_events;
-		//checks for core addon enabled
-		if (isset($events->listeners['init_listeners']['CMF_Core_Listener'][0][0])
-			&& $events->listeners['init_listeners']['CMF_Core_Listener'][0][0] == 'CMF_Core_Listener')
-		{
-			array_unshift($events->listeners['init_listeners']['_'], $events->listeners['init_listeners']['CMF_Core_Listener'][0]);
-			unset($events->listeners['init_listeners']['CMF_Core_Listener'][0]);
-
-			XenForo_CodeEvent::fire('init_listeners', array($events));
-
-			unset($events->listeners['init_listeners']);
-			$events->listeners = array_merge_recursive(
-				$events->prepareDynamicListeners(),
-				$events->listeners
-			);
-		}
-		else
-		{
-			unset($events->listeners['init_listeners']);
-		}
-	}
+	protected $_fireInit = false;
 
 	/**
 	 * Public setter for _eval
@@ -135,6 +109,7 @@ class CMF_Core_Autoloader extends XenForo_Autoloader
 			//autoload not working yet
 			include(dirname(__FILE__) . '/Listener.php');
 			$newInstance->_events = CMF_Core_Listener::getInstance();
+			$newInstance->_fireInit = true;
 
 			return $newInstance;
 		}
@@ -162,10 +137,10 @@ class CMF_Core_Autoloader extends XenForo_Autoloader
 	public function autoload($class)
 	{
 		//first class load after xenforo listeners load
-		if (!$this->_initListenersFired && isset($this->_events->listeners['init_listeners']['CMF_Core_Listener'][0][0]))
+		if ($this->_fireInit)
 		{
-			$this->_initListenersFired = true;
-			$this->_fireInitListeners();
+			$this->_fireInit = false;
+			$this->_events->fireInitListeners();
 		}
 
 		if (class_exists($class, false) || interface_exists($class, false))

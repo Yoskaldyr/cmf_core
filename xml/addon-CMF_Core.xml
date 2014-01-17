@@ -47,7 +47,7 @@
 <p>This class must extend the non-existent XFCP_x class. This will be resolved at run time.</p>]]></event>
   </code_events>
   <code_event_listeners>
-    <listener event_id="init_listeners" execute_order="1" callback_class="CMF_Core_Listener" callback_method="initListeners" active="1" hint="" description="Base Init Listeners (for enabling disabling addon)"/>
+    <listener event_id="load_class_proxy_class" execute_order="1" callback_class="CMF_Core_Listener" callback_method="loadProxyClass" active="1" hint="_Enable_CMF" description="Listener with fake class hint (for enabling/disabling all CMF addons)"/>
   </code_event_listeners>
   <cron/>
   <email_templates/>
@@ -59,7 +59,9 @@
     <interface_groups/>
   </permissions>
   <phrases>
+    <phrase title="cmf_child_forums" version_id="1000031" version_string="1.0.0 b1"><![CDATA[Child Forums]]></phrase>
     <phrase title="cmf_child_nodes" version_id="0" version_string="0.0.1 alpha"><![CDATA[Child Nodes]]></phrase>
+    <phrase title="cmf_update_child_forums_on_save" version_id="1000031" version_string="1.0.0 b1"><![CDATA[Update Child Forums On Save]]></phrase>
     <phrase title="cmf_update_child_nodes_on_save" version_id="0" version_string="0.0.1 alpha"><![CDATA[Update Child Nodes On Save]]></phrase>
   </phrases>
   <route_prefixes/>

@@ -25,6 +25,12 @@ class CMF_Core_Listener extends XenForo_CodeEvent
 	public $listeners = array();
 
 	/**
+	 * Listeners init array - original listeners loader on config stage
+	 * @var array
+	 */
+	protected $_listenersInit = array();
+
+	/**
 	 * Global disabler/enabler of listeners core
 	 *
 	 * @var bool
@@ -65,6 +71,8 @@ class CMF_Core_Listener extends XenForo_CodeEvent
 	 */
 	protected static $_counters = array();
 
+	protected static $_configOriginal = null;
+
 	/**
 	 * Gets the CMF Core Listener instance.
 	 *
@@ -91,13 +99,83 @@ class CMF_Core_Listener extends XenForo_CodeEvent
 		$this->listeners =& XenForo_CodeEvent::$_listeners;
 	}
 
-	/**
-	 * Returns array of original listeners from parent (XenForo_CodeEvent)
-	 * @return array
-	 */
-	public function getXenForoListeners()
+	public function fireInitListeners()
 	{
-		return ($return = parent::$_listeners) ? $return : array();
+		$original = XenForo_Application::get('config');
+		//firing only once
+		if ($original->enableListeners)
+		{
+			$key = 'codeEventListeners';
+			//trying load from cache first
+			$data = ($cache = XenForo_Application::getCache()) ? $cache->load('data_' . $key) : false;
+			// or from DB
+			if (!$data)
+			{
+				try
+				{
+					$db = XenForo_Application::getDb();
+					if ($db->isConnected())
+					{
+						$data = @$db->fetchOne('SELECT data_value FROM xf_data_registry WHERE data_key = ?', $key);
+					}
+				} catch (Exception $e)
+				{
+				}
+			}
+
+			if ($data)
+			{
+				$listeners = unserialize($data);
+				//checks for core addon enabled
+				if (isset($listeners['load_class_proxy_class']['_Enable_CMF']))
+				{
+					//setup listeners (first stage)
+					$this->listeners = $listeners;
+					$this->prependListener('init_listeners', array('CMF_Core_Listener', 'initListeners'));
+					XenForo_CodeEvent::fire('init_listeners', array($this));
+
+					//removing init_listeners event for safe multiple init
+					//unset($this->listeners['init_listeners']);
+					//setup dynamic listeners (final stage)
+					$this->listeners = array_merge_recursive(
+						$this->prepareDynamicListeners(),
+						$this->listeners
+					);
+					if ($this->listeners)
+					{
+						//need for disable XenForo Listeners setup in dependencies class (may be enabled later in safe mode)
+						$config = new Zend_Config(array(), true);
+						$config
+							->merge($original)
+							->merge(new Zend_Config(array('enableListeners' => false)))
+							->setReadOnly();
+						XenForo_Application::set('config', $config);
+						//$config['enableListeners'] = 2; enables safe mode in config.php
+						if ($original->enableListeners === 2)
+						{
+							//safe mode - restoring original config on init_dependencies
+							$this->prependListener('init_dependencies', array('CMF_Core_Listener', 'restoreConfig'));
+							self::$_configOriginal = $original;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	/**
+	 * Restore original config.
+	 *
+	 * @param XenForo_Dependencies_Abstract $dependencies
+	 * @param array                         $data
+	 *
+	 * */
+	public static function restoreConfig(XenForo_Dependencies_Abstract $dependencies, array $data)
+	{
+		if (self::$_configOriginal)
+		{
+			XenForo_Application::set('config', self::$_configOriginal);
+		}
 	}
 
 	/**
