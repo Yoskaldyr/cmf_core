@@ -131,7 +131,8 @@ class CMF_Core_Listener extends XenForo_CodeEvent
 				{
 					//setup listeners (first stage)
 					$this->listeners = $listeners;
-					$this->prependListener('init_listeners', array('CMF_Core_Listener', 'initListeners'));
+					$initCallback = array(array('CMF_Core_Listener', 'initListeners'));
+					$this->listeners['init_listeners']['_'] = (isset($this->listeners['init_listeners']['_'])) ? array_merge($initCallback, $this->listeners['init_listeners']['_']) : $initCallback;
 					XenForo_CodeEvent::fire('init_listeners', array($this));
 
 					//removing init_listeners event for safe multiple init

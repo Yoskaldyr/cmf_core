@@ -5,8 +5,6 @@
  *
  * @package CMF_Core
  * @author Yoskaldyr <yoskaldyr@gmail.com>
- * @version 1000011 $Id$
- * @since   1000011
  */
 abstract class CMF_Core_DataWriter_Abstract extends XFCP_CMF_Core_DataWriter_Abstract
 {
@@ -198,5 +196,4 @@ abstract class CMF_Core_DataWriter_Abstract extends XFCP_CMF_Core_DataWriter_Abs
 		}
 		return $data;
 	}
-
 }

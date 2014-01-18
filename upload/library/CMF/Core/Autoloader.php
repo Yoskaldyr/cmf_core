@@ -26,20 +26,6 @@ class CMF_Core_Autoloader extends XenForo_Autoloader
 	protected $_rootDir = '.';
 
 	/**
-	 * Path to directory containing the application's library.
-	 *
-	 * @var string
-	 */
-	protected $_addonDir = null;
-
-	/**
-	 * Array of class prefix to addon prefix bindings.
-	 *
-	 * @var array
-	 */
-	protected $_addonMap = array();
-
-	/**
 	 * Path to directory for storing the proxy classes.
 	 *
 	 * @var string
@@ -66,44 +52,24 @@ class CMF_Core_Autoloader extends XenForo_Autoloader
 	}
 
 	/**
-	 * Public setter for _addonDir
-	 *
-	 * @param string $dir   New addon directory.
-	 *                      If empty addon's autoloader will be disabled.
-	 * @return $this
-	 */
-	public function setAddonDir($dir = '')
-	{
-		$this->_addonDir = ($dir && ($dir = trim((string)$dir)) && @is_readable($dir) && @is_dir($dir)) ? $dir : null;
-		return $this;
-	}
-
-	/**
-	 * Public setter for _addonMap
-	 * @param array $map Array of class prefix to addon prefix bindings to add
-	 * @return $this
-	 * */
-	public function addAddonMap($map)
-	{
-		if ($map && is_array($map))
-		{
-			$this->_addonMap = $map + $this->_addonMap;
-		}
-		return $this;
-	}
-
-	/**
 	 * Manually reset the new autoloader instance. Use this to inject a modified version.
 	 *
-	 * @param XenForo_Autoloader|null
-	 * @return CMF_Core_Autoloader
+	 * @param XenForo_Autoloader|null|string
+	 * @return $this|CMF_Core_Autoloader
 	 */
-	public static function getProxy()
+	public static function getProxy($newInstance = null)
 	{
 		$instance = XenForo_Autoloader::getInstance();
 		if (!($instance instanceof CMF_Core_Autoloader))
 		{
-			$newInstance = new self();
+			if (!$newInstance)
+			{
+				$newInstance = new self();
+			}
+			else if (is_string($newInstance) && class_exists($newInstance))
+			{
+				$newInstance = new $newInstance();
+			}
 			$newInstance->setupAutoloader($instance->getRootDir());
 			XenForo_Autoloader::setInstance($newInstance);
 			//autoload not working yet
@@ -258,56 +224,6 @@ class CMF_Core_Autoloader extends XenForo_Autoloader
 			return (class_exists($class, false) || interface_exists($class, false));
 		}
 		return parent::autoload($class);
-	}
-
-	/**
-	 * Resolves a class name to an autoload path.
-	 *
-	 * @param string $class Name of class to autoload
-	 *
-	 * @return string|boolean False if the class contains invalid characters.
-	 */
-	public function autoloaderClassToFile($class)
-	{
-		if (preg_match('#[^a-zA-Z0-9_]#', $class))
-		{
-			return false;
-		}
-		if ($this->_addonDir)
-		{
-			$chunks = explode('_', $class);
-			if (sizeof($chunks) > 1)
-			{
-				//shot addon prefix (only addonName)
-				$classPrefix = $chunks[0];
-				$dir = $this->_addonDir . '/' . (!empty($this->_addonMap[$classPrefix]) ? $this->_addonMap[$classPrefix] : strtolower($classPrefix));
-				if (sizeof($chunks)>2)
-				{
-					//long addon prefix (providerName_addonName)
-					$classPrefix = $chunks[0] . '_' . $chunks[1];
-					$dirLong = $this->_addonDir . '/' . (!empty($this->_addonMap[$classPrefix]) ? $this->_addonMap[$classPrefix] : strtolower($classPrefix));
-					if (file_exists($dirLong))
-					{
-						$dir = $dirLong;
-					}
-				}
-				// Short convention with _Extra dir
-				$fileShort = $dir . '/' . implode('/', array_slice($chunks, 2)) . '.php';
-				// Long convention with full path (upload/library)
-				$fileLong = $dir . '/upload/library/' . implode('/', $chunks) . '.php';
-
-				if (file_exists($fileShort))
-				{
-					return $fileShort;
-				}
-				else if (file_exists($fileLong))
-				{
-					return $fileLong;
-				}
-			}
-		}
-		return $this->_rootDir . '/' . str_replace('_', '/', $class) . '.php';
-		//return parent::autoloaderClassToFile($class);
 	}
 
 	/**
