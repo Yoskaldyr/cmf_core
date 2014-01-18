@@ -17,7 +17,7 @@
 CMF_Core_Autoloader::getProxy();
 ~~~
 
-При таком подходе `CMF_Core_Autoloader` грузится прямо перед `XenForo_FrontController` что позволяет при желании расширить практически любой класс после него:
+При таком подходе `CMF_Core_Autoloader` грузится прямо перед `XenForo_FrontController` что позволяет при желании расширить любой класс после него, кроме `XenForo_Application`, который загружается ранее:
 
 ~~~
 1. index.php
@@ -28,120 +28,6 @@ CMF_Core_Autoloader::getProxy();
 6. library/Zend/Config.php
 7. library/config.php
 8. library/CMF/Core/Autoloader.php
-9. library/XenForo/FrontController.php
-~~~
-
-Хоть расширить теоретически можно любой класс, но практически удобное API, с динамическим наследованием, аналогичное стандартному API XenForo для обработчиков событий можно сделать только после стандартной загрузки `XenForo_CodeEvent`, и после прогрузки всех основных обработчиков событий из базы, т.е. после:
-
-~~~
-9.  library/XenForo/FrontController.php
-10. library/XenForo/Dependencies/Public.php
-11. library/XenForo/Dependencies/Abstract.php
-12. library/Zend/*
-    ...
-17. library/XenForo/Model.php
-18. library/XenForo/Model/DataRegistry.php
-19. library/XenForo/CodeEvent.php
-20. library/Zend/Db*
-    ...
-30. library/CMF/Core/Application.php
-~~~
-
-Режим разработки. Отдельная папка для каждого аддона.
------------------------------------------------------
-При разработке удобно когда каждый аддон лежит в полностью своей папке, что практически не осуществимо в текущей структуре папок XenForo (php, js и стили - все в разных папках).
-Для этого у автолоадера есть режим поиска файлов в папке по альтернативному пути, причем внутри файлы хака могут располагаться исходя из нескольких вариантов соглашений (связано с тем что разработчики как только не называют свои классы при создании расширения).
-
-Метод автозагрузчика для указания папки поиска дополнений `setAddonDir`.
-
-> Примечание. Все публичные сеттеры, `setAddonDir` в том числе, возвращают сам объект автозагрузчика, что позволяет все настройки произвести одной последовательной цепочкой вызовов.
-
-Пример: инициализируем автозагрузчик и предварительно ищем дополнения в папке `/addons/`:
-
-~~~php
-<?php
-CMF_Core_Autoloader::getProxy()->setAddonDir('addons');
-~~~
-Если автозагрузчик не находит класс по альтернативному пути, то он ищет его по первоначальному пути, т.е. в `/library/`.
-
-### Соглашения по структуре и именованию папок дополнений
-Разработчики при наименовании своих дополнений обычно используют 2 варианта наименования классов короткий и длинный:
-
-1. Короткий - `AddOnName_SubClass` (соответсвенно хранится в `/library/AddOnName/SubClass.php`)
-2. Длинный - `Author_AddOnName_SubClass` (соответсвенно хранится в `/library/Author/AddOnName/SubClass.php`)
-
-Соотвественно id дополнения на основе названия классов можно считать `addonname` и `author_addonname` (для удобства http редиректов будут в нижнем регистре).
-После чего простая последовательная проверка на наличие папок `author_addonname` и `addonname` позволяет точно сказать по какому соглашению проименованы классы в аддоне.
-
-Учитывая уже сложившуюся структуру SVN репозиториев для CMF, когда файлы классов лежат в 1 папке `/library/CMF/AddonName/` (т.е. длинное наименование), а все дополнительные файлы (js/xml/style) лежат в `/library/CMF/AddonName/_Extras/`, то автозагрузчик обрабатывает и этот вариант хранения готового дополнения.
-
-Т.е. дополнения с длинным наименованиями можно хранить так:
-
-+ **Расположение по умолчанию:**
-	+ xml файлов с аддоном и языками может вообще не быть в папках
-
-~~~
-/library/CMF/SomeAddon/Model/Forum.php
-/library/CMF/SomeAddon/Model/Thread.php
-/library/CMF/SomeAddon/Listener.php
-/js/cmf/someaddon/thread.js
-/styles/cmf/someaddon/image.jpg
-~~~
-
-+  **CMF-соглашение:**
-	+ папка дополнения первые 2 части класса через подчеркивание в нижнем регистре
-	+ остальная часть пути класса как в library
-	+ все остальное лежит в _Extras
-	+ xml лежит в _Extras
-
-~~~
-/addons/cmf_someaddon/Model/Forum.php
-/addons/cmf_someaddon/Model/Thread.php
-/addons/cmf_someaddon/Listener.php
-/addons/cmf_someaddon/_Extras/js/cmf/someaddon/thread.js
-/addons/cmf_someaddon/_Extras/styles/cmf/someaddon/image.jpg
-/addons/cmf_someaddon/_Extras/xml/language.xml
-~~~
-
-+  **FullPath-соглашение:**
-	+ папка дополнения первые 2 части класса через подчеркивание в нижнем регистре
-	+ все кроме xml лежит в upload по полному пути
-	+
-
-~~~
-/addons/cmf_someaddon/upload/library/CMF/SomeAddon/Model/Forum.php
-/addons/cmf_someaddon/upload/library/CMF/SomeAddon/Model/Thread.php
-/addons/cmf_someaddon/upload/library/CMF/SomeAddon/Listener.php
-/addons/cmf_someaddon/upload/js/cmf/someaddon/thread.js
-/addons/cmf_someaddon/upload/styles/cmf/someaddon/image.jpg
-/addons/cmf_someaddon/xml/language.xml
-~~~
-
-Для дополнений с **коротким** стилем наименования используется только **FullPath-соглашение** только в качестве имени папки используется первая часть класса.
-
-Во всех соглашениях за счет нижнего регистра названия аддона и присутствия частей названия аддона в путях к статическим файлам, легко сделать редирект с `/(js|styles)/` на соответствующую папку аддона.
-
-### Привязка классов к определенному дополнению
-Если дополнение использует сторонние классы, с другим префиксом/неймспейсом (типичный пример дополнение `TMS` использует сторонние классы `Diff_*`), то может понадобиться принудительно указать в какой папке искать класс с заданным префиксом.
-
-Для это используется метод автозагрузчика `addAddonMap`, пример использования ниже в примере конфига.
-
-### Типичный конфиг
-Типичный конфиг, который добвляется в `config.php`, когда надо чтобы дополнения лежали в `/addons/`, при условии что сам хак ядра тоже будет лежать в этой папке:
-
-~~~php
-<?php
-//вручную инклудим автозагрузчик
-include('addons/cmf_core/upload/library/CMF/Core/Autoloader.php');
-//инициализируем автозагрузчик и устанавливаем путь поиска дополнений
-CMF_Core_Autoloader::getProxy()
-	->setAddonDir('addons')
-		//т.к. сеттеры можно вызывать цепочкой последовательно, то далее
-		//указываем что надо искать классы Diff_* в папке аддона tms
-	->addAddonMap(
-		array(
-	        'Diff' => 'tms' //в качестве ключа самая первая/первые две части класса
-	                        //в качестве значения папка дополнения
-		)
-);
+.....
+.. library/XenForo/FrontController.php
 ~~~
