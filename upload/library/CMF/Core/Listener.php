@@ -171,7 +171,7 @@ class CMF_Core_Listener extends XenForo_CodeEvent
 	 * @param array                         $data
 	 *
 	 * */
-	public static function restoreConfig(XenForo_Dependencies_Abstract $dependencies, array $data)
+	public static function restoreConfig(/** @noinspection PhpUnusedParameterInspection */ XenForo_Dependencies_Abstract $dependencies, array $data)
 	{
 		if (self::$_configOriginal)
 		{
@@ -216,6 +216,12 @@ class CMF_Core_Listener extends XenForo_CodeEvent
 			{
 				$listeners['controller_pre_dispatch'][$className] = array(
 					array('CMF_Core_Listener', 'controllerPreDispatch')
+				);
+			}
+			if (!isset($listeners['controller_post_dispatch'][$className]))
+			{
+				$listeners['controller_post_dispatch'][$className] = array(
+					array('CMF_Core_Listener', 'controllerPostDispatch')
 				);
 			}
 		}
@@ -486,6 +492,31 @@ class CMF_Core_Listener extends XenForo_CodeEvent
 					$dwName,
 					$controller->getInput()->filter(CMF_Core_Application::getMerged(CMF_Core_Application::INPUT_FIELDS, $dwName))
 				);
+			}
+		}
+	}
+
+	/**
+	 * controller_post_dispatch listener
+	 *
+	 * @param XenForo_Controller $controller
+	 * @param mixed              $controllerResponse
+	 * @param string             $controllerName
+	 * @param string             $action
+	 */
+	public static function controllerPostDispatch(XenForo_Controller $controller, $controllerResponse, $controllerName, $action)
+	{
+		if ($controllerResponse instanceof XenForo_ControllerResponse_View)
+		{
+			$actions = CMF_Core_Application::getMerged(
+				CMF_Core_Application::INPUT_ACTIONS,
+				$controllerName
+			);
+			if (isset($actions[$action]))
+			{
+				$dwClasses = is_array($actions[$action]) ? array_unique($actions[$action]) : $actions[$action];
+				/** XenForo_ControllerResponse_View $controllerResponse */
+				$controllerResponse->params['cmfInput'] = $controller->getInput()->filter(CMF_Core_Application::getMerged(CMF_Core_Application::INPUT_FIELDS, $dwClasses));
 			}
 		}
 	}
