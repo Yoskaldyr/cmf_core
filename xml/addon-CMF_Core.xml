@@ -1,20 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<addon addon_id="CMF_Core" title="[CMF] Core" version_string="1.0.0 RC" version_id="1000050" url="https://github.com/Yoskaldyr/cmf_core" install_callback_class="CMF_Core_Install" install_callback_method="install" uninstall_callback_class="" uninstall_callback_method="">
+<addon addon_id="CMF_Core" title="[CMF] Core" version_string="1.0.0 RC1" version_id="1000051" url="https://github.com/Yoskaldyr/cmf_core" install_callback_class="CMF_Core_Install" install_callback_method="install" uninstall_callback_class="" uninstall_callback_method="">
   <admin_navigation/>
   <admin_permissions/>
   <admin_style_properties/>
   <admin_templates/>
   <admin_template_modifications/>
   <code_events>
-    <event event_id="init_application"><![CDATA[<p>Called when the CMF core application loads its default data.</p>
-
-<p>Callback signature:</p>
-<blockquote><code><em>CMF_Core_Application</em> $app</blockquote>
-
-<p>Arguments:</p>
-<ol>
-	<li><code><em>CMF_Core_Application</em> $app</code> - instance of CMF core application class</li>
-</ol>]]></event>
     <event event_id="init_listeners"><![CDATA[<p>Called after loading all event listeners from DB or cache.</p>
 
 <p>Callback signature:</p>
