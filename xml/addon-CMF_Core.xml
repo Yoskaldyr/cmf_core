@@ -43,9 +43,7 @@
   <cron/>
   <email_templates/>
   <email_template_modifications/>
-  <optiongroups>
-    <group group_id="cmf" display_order="1" debug_only="0"/>
-  </optiongroups>
+  <optiongroups/>
   <permissions>
     <permission_groups/>
     <permissions/>
@@ -56,8 +54,6 @@
     <phrase title="cmf_child_nodes" version_id="0" version_string="0.0.1 alpha"><![CDATA[Child Nodes]]></phrase>
     <phrase title="cmf_update_child_forums_on_save" version_id="1000031" version_string="1.0.0 b1"><![CDATA[Update Child Forums On Save]]></phrase>
     <phrase title="cmf_update_child_nodes_on_save" version_id="0" version_string="0.0.1 alpha"><![CDATA[Update Child Nodes On Save]]></phrase>
-    <phrase title="option_group_cmf" version_id="1000051" version_string="1.0.0 RC1"><![CDATA[Content Management Framework (CMF)]]></phrase>
-    <phrase title="option_group_cmf_description" version_id="1000051" version_string="1.0.0 RC1"><![CDATA[]]></phrase>
   </phrases>
   <route_prefixes/>
   <style_properties/>
