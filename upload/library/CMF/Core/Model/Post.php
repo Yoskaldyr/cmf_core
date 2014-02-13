@@ -19,6 +19,12 @@ class CMF_Core_Model_Post extends XFCP_CMF_Core_Model_Post
 
 	public function preparePost(array $post, array $thread, array $forum, array $nodePermissions = null, array $viewingUser = null)
 	{
+		/** @var CMF_Core_Model_Node $nodeModel */
+		$nodeModel = $this->getModelFromCache('XenForo_Model_Node');
+		if (!$nodeModel->isUnserializedNodeFields($forum))
+		{
+			$forum = $nodeModel->unserializeNodeFields($forum);
+		}
 		return CMF_Core_Application::unserializeDataByKey(parent::preparePost($post, $thread, $forum, $nodePermissions, $viewingUser), 'XenForo_DataWriter_DiscussionMessage_Post');
 	}
 }
