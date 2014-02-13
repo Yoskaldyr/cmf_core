@@ -11,9 +11,9 @@
 class CMF_Core_Model_Node extends XFCP_CMF_Core_Model_Node
 {
 
-	public function unserializeNodeFields($node)
+	public function unserializeNodeFields($node, $force = false)
 	{
-		if (!$this->_isNode($node))
+		if (!$this->_isNode($node) || (!empty($node['__nodeUnserialized']) && !$force))
 		{
 			return $node;
 		}
@@ -24,7 +24,15 @@ class CMF_Core_Model_Node extends XFCP_CMF_Core_Model_Node
 		{
 			$nodeClasses[] = $nodeType['datawriter_class'];
 		}
-		return CMF_Core_Application::unserializeDataByKey($node, $nodeClasses);
+		$node = CMF_Core_Application::unserializeDataByKey($node, $nodeClasses);
+		$node['__nodeUnserialized'] = true;
+
+		return $node;
+	}
+
+	public function isUnserializedNodeFields($node)
+	{
+		return ($this->_isNode($node) && !empty($node['__nodeUnserialized']));
 	}
 
 	public function getNodeById($nodeId, array $fetchOptions = array())
