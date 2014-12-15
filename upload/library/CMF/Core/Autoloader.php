@@ -40,6 +40,13 @@ class CMF_Core_Autoloader extends XenForo_Autoloader
 	protected $_fireInit = false;
 
 	/**
+	 * If true loads core events lately.
+	 *
+	 * @var bool
+	 */
+	protected $_lateLoad = true;
+
+	/**
 	 * Public setter for _eval
 	 *
 	 * @param boolean $eval Fail-safe proxy loader with php 'eval'.
@@ -54,7 +61,7 @@ class CMF_Core_Autoloader extends XenForo_Autoloader
 	/**
 	 * Manually reset the new autoloader instance. Use this to inject a modified version.
 	 *
-	 * @param XenForo_Autoloader|null|string
+	 * @param XenForo_Autoloader|null|boolean|string
 	 * @return $this|CMF_Core_Autoloader
 	 */
 	public static function getProxy($newInstance = null)
@@ -62,7 +69,13 @@ class CMF_Core_Autoloader extends XenForo_Autoloader
 		$instance = XenForo_Autoloader::getInstance();
 		if (!($instance instanceof CMF_Core_Autoloader))
 		{
+			$lateLoad = false;
 			if (!$newInstance)
+			{
+				$newInstance = new self();
+				$lateLoad = true;
+			}
+			else if (is_bool($newInstance))
 			{
 				$newInstance = new self();
 			}
@@ -75,7 +88,11 @@ class CMF_Core_Autoloader extends XenForo_Autoloader
 			//autoload not working yet
 			include(dirname(__FILE__) . '/Listener.php');
 			$newInstance->_events = CMF_Core_Listener::getInstance();
-			$newInstance->_fireInit = true;
+			$newInstance->_lateLoad = $lateLoad;
+			if (!$lateLoad)
+			{
+				$newInstance->_fireInit = true;
+			}
 
 			return $newInstance;
 		}
@@ -103,10 +120,11 @@ class CMF_Core_Autoloader extends XenForo_Autoloader
 	public function autoload($class)
 	{
 		//first class load after xenforo listeners load
-		if ($this->_fireInit)
+		if ($this->_fireInit
+			|| ($this->_lateLoad && $class == 'XenForo_Options' && !class_exists('XenForo_Options', false)))
 		{
 			$this->_fireInit = false;
-			$this->_events->fireInitListeners();
+			$this->_events->fireInitListeners($this->_lateLoad);
 		}
 
 		if (class_exists($class, false) || interface_exists($class, false))
