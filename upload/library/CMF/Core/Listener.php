@@ -99,6 +99,19 @@ class CMF_Core_Listener extends XenForo_CodeEvent
 		$this->listeners =& XenForo_CodeEvent::$_listeners;
 	}
 
+	protected function _fireInit()
+	{
+		$initCallback = array(array('CMF_Core_Listener', 'initListeners'));
+		$this->listeners['init_listeners']['_'] = (isset($this->listeners['init_listeners']['_'])) ? array_merge($initCallback, $this->listeners['init_listeners']['_']) : $initCallback;
+
+		XenForo_CodeEvent::fire('init_listeners', array($this));
+		//setup dynamic listeners (final stage)
+		$this->listeners = array_merge_recursive(
+			$this->prepareDynamicListeners(),
+			$this->listeners
+		);
+	}
+
 	public function fireInitListeners($lateLoad)
 	{
 		$original = XenForo_Application::get('config');
@@ -109,14 +122,7 @@ class CMF_Core_Listener extends XenForo_CodeEvent
 			{
 				if (isset($this->listeners['load_class_proxy_class']['_Enable_CMF']))
 				{
-					$initCallback = array(array('CMF_Core_Listener', 'initListeners'));
-					$this->listeners['init_listeners']['_'] = (isset($this->listeners['init_listeners']['_'])) ? array_merge($initCallback, $this->listeners['init_listeners']['_']) : $initCallback;
-					XenForo_CodeEvent::fire('init_listeners', array($this));
-					//setup dynamic listeners
-					$this->listeners = array_merge_recursive(
-						$this->prepareDynamicListeners(),
-						$this->listeners
-					);
+					$this->_fireInit();
 				}
 			}
 			else
@@ -147,17 +153,9 @@ class CMF_Core_Listener extends XenForo_CodeEvent
 					{
 						//setup listeners (first stage)
 						$this->listeners = $listeners;
-						$initCallback = array(array('CMF_Core_Listener', 'initListeners'));
-						$this->listeners['init_listeners']['_'] = (isset($this->listeners['init_listeners']['_'])) ? array_merge($initCallback, $this->listeners['init_listeners']['_']) : $initCallback;
-						XenForo_CodeEvent::fire('init_listeners', array($this));
-
+						$this->_fireInit();
 						//removing init_listeners event for safe multiple init
 						//unset($this->listeners['init_listeners']);
-						//setup dynamic listeners (final stage)
-						$this->listeners = array_merge_recursive(
-							$this->prepareDynamicListeners(),
-							$this->listeners
-						);
 						if ($this->listeners)
 						{
 							//need for disable XenForo Listeners setup in dependencies class (may be enabled later in safe mode)
@@ -452,17 +450,20 @@ class CMF_Core_Listener extends XenForo_CodeEvent
 		//Core listeners
 		$events->addExtenders(
 			array(
-			     //datawriters
-			     'XenForo_DataWriter_Node'                   => 'CMF_Core_DataWriter_Node',
-			     'XenForo_DataWriter_Forum'                  => 'CMF_Core_DataWriter_Node',
-			     'XenForo_DataWriter_Page'                   => 'CMF_Core_DataWriter_Node',
-			     'XenForo_DataWriter_Category'               => 'CMF_Core_DataWriter_Node',
-			     'XenForo_DataWriter_LinkForum'              => 'CMF_Core_DataWriter_Node',
-			     //models
-			     'XenForo_Model_Thread'                      => 'CMF_Core_Model_Thread',
-			     'XenForo_Model_Post'                        => 'CMF_Core_Model_Post',
-			     'XenForo_Model_Node'                        => 'CMF_Core_Model_Node',
-			     'XenForo_Model_Forum'                       => 'CMF_Core_Model_Forum',
+				//datawriters
+				'XenForo_DataWriter_Node' => 'CMF_Core_DataWriter_Node',
+				'XenForo_DataWriter_Forum' => 'CMF_Core_DataWriter_Node',
+				'XenForo_DataWriter_Page' => 'CMF_Core_DataWriter_Node',
+				'XenForo_DataWriter_Category' => 'CMF_Core_DataWriter_Node',
+				'XenForo_DataWriter_LinkForum' => 'CMF_Core_DataWriter_Node',
+				//models
+				'XenForo_Model_Thread' => 'CMF_Core_Model_Thread',
+				'XenForo_Model_Post' => 'CMF_Core_Model_Post',
+				'XenForo_Model_Node' => 'CMF_Core_Model_Node',
+				'XenForo_Model_Forum' => 'CMF_Core_Model_Forum',
+				'XenForo_Model_DataRegistry' => 'CMF_Core_Model_DataRegistry',
+				//view
+				'XenForo_ViewPublic_Attachment_View' => 'CMF_Core_ViewPublic_Attachment_View',
 			)
 		);
 		$events->addProxyExtenders(
