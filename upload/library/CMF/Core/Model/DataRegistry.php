@@ -21,7 +21,7 @@ class CMF_Core_Model_DataRegistry extends XFCP_CMF_Core_Model_DataRegistry
 		if ($itemName == 'codeEventListeners' && is_array($value) && !empty($value['init_listeners']) && is_array($value['init_listeners']))
 		{
 			$urlParts = @parse_url(XenForo_Application::getOptions()->boardUrl);
-			$host = ($urlParts && !empty($urlParts['host'])) ? preg_replace('#^www\.#ui', '', $urlParts['host']) : '';
+			$host = ($urlParts && !empty($urlParts['host'])) ? utf8_strtolower(preg_replace('#^www\.#ui', '', $urlParts['host'])) : '';
 
 			if ($host &&
 				(preg_match('#^(127\.|192\.168\.|10\.|172\.(1[6789]|2|3[01])|169\.254\.)#', $host)

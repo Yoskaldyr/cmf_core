@@ -23,5 +23,4 @@ class XFCP_CMF_Core_DataWriter_Node extends XenForo_DataWriter_Node {}
 class XFCP_CMF_Core_Model_Attachment extends XenForo_Model_Attachment {}
 abstract class XFCP_CMF_Core_Image_Abstract extends XenForo_Image_Abstract {}
 class XFCP_CMF_Core_ControllerPublic_Attachment extends XenForo_ControllerPublic_Attachment {}
-class XFCP_CMF_Core_ViewPublic_Attachment_DoUpload extends XenForo_ViewPublic_Attachment_DoUpload {}
 class XFCP_CMF_Core_ViewPublic_Attachment_View extends XenForo_ViewPublic_Attachment_View {}

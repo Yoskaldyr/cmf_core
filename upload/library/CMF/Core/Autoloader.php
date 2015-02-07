@@ -349,8 +349,9 @@ class CMF_Core_Autoloader extends XenForo_Autoloader
 		return (
 			$this->_createProxyDirectory()
 				&& !empty($body)
-				&& file_put_contents($proxyFile, $body)
-				&& XenForo_Helper_File::makeWritableByFtpUser($proxyFile)
+				&& ($tempFile = tempnam(XenForo_Helper_File::getTempDir(), 'xf'))
+				&& file_put_contents($tempFile, $body)
+				&& XenForo_Helper_File::safeRename($tempFile, $proxyFile)
 		);
 	}
 
