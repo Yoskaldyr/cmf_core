@@ -69,6 +69,20 @@ class CMF_Core_Install
 				throw new XenForo_Exception('config.php is not writeable. Please remove any "getProxy()" calls from config.php manually before run uninstall.');
 			}
 		}
+		$classDir = XenForo_Helper_File::getInternalDataPath() . '/proxy_classes';
+		if (is_dir($classDir) && is_writable($classDir))
+		{
+			$files = glob($classDir . '/*.php');
+			if (is_array($files))
+			{
+				foreach ($files AS $file)
+				{
+					@unlink($file);
+				}
+			}
+			@rmdir($classDir);
+		}
+
 		XenForo_Application::setSimpleCacheData('cmfAddOns', false);
 	}
 }

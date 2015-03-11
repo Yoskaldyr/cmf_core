@@ -47,7 +47,11 @@ class CMF_Core_Model_DataRegistry extends XFCP_CMF_Core_Model_DataRegistry
 						if ($host && preg_match('#^CMF_(?!Development)#', $callback[0]))
 						{
 							$addOnId = preg_replace('#(^CMF_[a-zA-Z]+)_.+#', '$1', $callback[0]);
-							if ($hint == hash_hmac('md5', $host, $callback[0] . '::' . $callback[1]))
+							if (isset($addOns[$addOnId]) && $addOns[$addOnId] < 1000000)
+							{
+								$prepared[] = $callback;
+							}
+							else if ($hint == hash_hmac('md5', $host, $callback[0] . '::' . $callback[1]))
 							{
 								$prepared[] = $callback;
 								$addOnIds[] = $addOnId;
