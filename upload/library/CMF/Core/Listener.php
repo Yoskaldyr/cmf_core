@@ -462,14 +462,13 @@ class CMF_Core_Listener extends XenForo_CodeEvent
 				'XenForo_Model_Node' => 'CMF_Core_Model_Node',
 				'XenForo_Model_Forum' => 'CMF_Core_Model_Forum',
 				'XenForo_Model_DataRegistry' => 'CMF_Core_Model_DataRegistry',
-				//view
-				'XenForo_ViewPublic_Attachment_View' => 'CMF_Core_ViewPublic_Attachment_View',
 			)
 		);
 		$events->addProxyExtenders(
 			array(
-			     'XenForo_DataWriter'                   => 'CMF_Core_DataWriter_Abstract',
-			     'XenForo_ControllerAdmin_NodeAbstract' => 'CMF_Core_ControllerAdmin_NodeAbstract'
+				'XenForo_DataWriter' => 'CMF_Core_DataWriter_Abstract',
+				'XenForo_ControllerAdmin_NodeAbstract' => 'CMF_Core_ControllerAdmin_NodeAbstract',
+				'XenForo_FileOutput' => 'CMF_Core_FileOutput'
 			)
 		);
 		/*

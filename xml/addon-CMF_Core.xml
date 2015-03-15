@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<addon addon_id="CMF_Core" title="CMF Core" version_string="1.0.3" version_id="1000073" url="https://github.com/Yoskaldyr/cmf_core" install_callback_class="CMF_Core_Install" install_callback_method="install" uninstall_callback_class="CMF_Core_Install" uninstall_callback_method="uninstall">
+<addon addon_id="CMF_Core" title="CMF Core" version_string="1.0.4" version_id="1000074" url="https://github.com/Yoskaldyr/cmf_core" install_callback_class="CMF_Core_Install" install_callback_method="install" uninstall_callback_class="CMF_Core_Install" uninstall_callback_method="uninstall">
   <admin_navigation/>
   <admin_permissions/>
   <admin_style_properties/>
@@ -52,6 +52,8 @@ xaccel=X-Accel-Redirect Header (nginx)
 xsendfile=X-Sendfile Header (experimental)</edit_format_params>
       <sub_options></sub_options>
       <relation group_id="attachments" display_order="100"/>
+      <relation group_id="cmf" display_order="1"/>
+      <relation group_id="messageOptions" display_order="115"/>
     </option>
   </optiongroups>
   <permissions>
@@ -65,7 +67,7 @@ xsendfile=X-Sendfile Header (experimental)</edit_format_params>
     <phrase title="cmf_update_child_forums_on_save" version_id="1000031" version_string="1.0.0 b1"><![CDATA[Update Child Forums On Save]]></phrase>
     <phrase title="cmf_update_child_nodes_on_save" version_id="0" version_string="0.0.1 alpha"><![CDATA[Update Child Nodes On Save]]></phrase>
     <phrase title="option_cmfDownloadMode" version_id="1000071" version_string="1.0.1"><![CDATA[Download Mode]]></phrase>
-    <phrase title="option_cmfDownloadMode_explain" version_id="1000071" version_string="1.0.1"><![CDATA[Mode for download attachments.]]></phrase>
+    <phrase title="option_cmfDownloadMode_explain" version_id="1000073" version_string="1.0.3"><![CDATA[Download mode for attachments and proxy images.]]></phrase>
     <phrase title="option_group_cmf" version_id="1000051" version_string="1.0.0 RC1"><![CDATA[Content Management Framework (CMF)]]></phrase>
     <phrase title="option_group_cmf_description" version_id="1000051" version_string="1.0.0 RC1"><![CDATA[]]></phrase>
   </phrases>
