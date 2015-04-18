@@ -20,6 +20,7 @@ class CMF_Core_Model_DataRegistry extends XFCP_CMF_Core_Model_DataRegistry
 	{
 		if ($itemName == 'codeEventListeners' && is_array($value) && !empty($value['init_listeners']) && is_array($value['init_listeners']))
 		{
+			/** @noinspection PhpUndefinedFieldInspection */
 			$urlParts = @parse_url(XenForo_Application::getOptions()->boardUrl);
 			$host = ($urlParts && !empty($urlParts['host'])) ? utf8_strtolower(preg_replace('#^www\.#ui', '', $urlParts['host'])) : '';
 
@@ -36,7 +37,11 @@ class CMF_Core_Model_DataRegistry extends XFCP_CMF_Core_Model_DataRegistry
 				? array('_' => $value['init_listeners']['_']) + $value['init_listeners']
 				: $value['init_listeners'];
 			$addOnIds = array();
-			$addOns = XenForo_Application::isRegistered('addOns') ? XenForo_Application::get('addOns') : array();
+			$addOns = $this->fetchAllKeyed('
+					SELECT *
+					FROM xf_addon
+					WHERE active = 1
+				', 'addon_id');
 
 			foreach ($initListeners as $hint => $listeners)
 			{
@@ -47,18 +52,17 @@ class CMF_Core_Model_DataRegistry extends XFCP_CMF_Core_Model_DataRegistry
 						if ($host && preg_match('#^CMF_(?!Development)#', $callback[0]))
 						{
 							$addOnId = preg_replace('#(^CMF_[a-zA-Z]+)_.+#', '$1', $callback[0]);
-							if (isset($addOns[$addOnId]) && $addOns[$addOnId] < 1000000)
+							if (
+								isset($addOns[$addOnId])
+								&& ($addOns[$addOnId]['version_id'] < 1000000	|| $hint == hash_hmac('md5', $addOns[$addOnId]['version_id'] . '_' . $host, $callback[0] . '::' . $callback[1]))
+							)
 							{
 								$prepared[] = $callback;
 							}
-							else if ($hint == hash_hmac('md5', $host, $callback[0] . '::' . $callback[1]))
+							elseif ($hint == hash_hmac('md5', $host, $callback[0] . '::' . $callback[1]))
 							{
 								$prepared[] = $callback;
 								$addOnIds[] = $addOnId;
-							}
-							else if (isset($addOns[$addOnId]) && $hint == hash_hmac('md5', $addOns[$addOnId] . '_' . $host , $callback[0] . '::' . $callback[1]))
-							{
-								$prepared[] = $callback;
 							}
 						}
 						else
@@ -72,18 +76,15 @@ class CMF_Core_Model_DataRegistry extends XFCP_CMF_Core_Model_DataRegistry
 			$addOnLinks = '';
 			if ($addOnIds)
 			{
-				$addOns = $this->fetchAllKeyed('
-					SELECT *
-					FROM xf_addon
-					WHERE addon_id IN ('. $this->_getDb()->quote($addOnIds). ')
-					AND active = 1
-				', 'addon_id');
-
-				foreach ($addOns as $addOn)
+				foreach ($addOnIds as $addOnId)
 				{
-					$addOnLinks .= $addOn['url']
-						? ' | <a href="' . $addOn['url'] . '" class="concealed">' . $addOn['title'] . '</a> '
-						: ' | <span class="concealed">' . $addOn['title'] . '</span> ';
+					if (isset($addOns[$addOnId]))
+					{
+						$addOn = $addOns[$addOnId];
+						$addOnLinks .= $addOn['url']
+							? ' | <a href="' . $addOn['url'] . '" class="concealed">' . $addOn['title'] . '</a> '
+							: ' | <span class="concealed">' . $addOn['title'] . '</span> ';
+					}
 				}
 			}
 			XenForo_Application::setSimpleCacheData('cmfAddOns', $addOnLinks);
