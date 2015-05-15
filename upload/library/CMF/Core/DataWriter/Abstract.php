@@ -8,11 +8,12 @@
  */
 abstract class CMF_Core_DataWriter_Abstract extends XFCP_CMF_Core_DataWriter_Abstract
 {
-	/**
+	/** @noinspection PhpMissingParentConstructorInspection
+	 *
 	 * Constructor. (changing _getFields() method)
 	 *
-	 * @param integer $errorHandler   Error handler. See {@link ERROR_EXCEPTION} and related.
-	 * @param array|null Dependency injector. Array keys available: db, cache.
+	 * @param integer $errorHandler Error handler. See {@link ERROR_EXCEPTION} and related.
+	 * @param array|null $inject Dependency injector. Array keys available: db, cache.
 	 */
 	public function __construct($errorHandler = self::ERROR_ARRAY, array $inject = null)
 	{
@@ -93,7 +94,7 @@ abstract class CMF_Core_DataWriter_Abstract extends XFCP_CMF_Core_DataWriter_Abs
 		if ($this->getOption(CMF_Core_Application::DW_ENABLE_OPTION) && ($coreFields = CMF_Core_Application::getMerged(CMF_Core_Application::DW_DATA, $this, true)))
 		{
 			$extraFields = array();
-			//manual fieldname search not buggy $this->getFieldNames()
+			//manual field name search not buggy $this->getFieldNames()
 			$fieldNames = array();
 			foreach ($this->_fields AS $fields)
 			{
@@ -139,17 +140,16 @@ abstract class CMF_Core_DataWriter_Abstract extends XFCP_CMF_Core_DataWriter_Abs
 		}
 		else
 		{
-			$dataNew = $data;
-
-			if (!is_array($dataNew))
+			if (!is_array($data))
 			{
-				$dataNew = unserialize($dataNew);
-				if (!is_array($dataNew))
-				{
-					$dataNew = null;
-				}
+				$data = @unserialize($data);
 			}
-			$data = ($dataNew) ? serialize($dataNew) : null;
+			if (!is_array($data))
+			{
+				$data = null;
+			}
+			/** @noinspection ReferenceMismatchInspection */
+			$data = ($data) ? serialize($data) : null;
 		}
 		return true;
 	}
@@ -170,9 +170,11 @@ abstract class CMF_Core_DataWriter_Abstract extends XFCP_CMF_Core_DataWriter_Abs
 		{
 			$data = @unserialize($data);
 		}
-		return $onlyArray
-			? (is_array($data) ? $data : array())
-			: $data;
+		if ($onlyArray && !is_array($data))
+		{
+			$data = array();
+		}
+		return $data;
 	}
 
 	/**

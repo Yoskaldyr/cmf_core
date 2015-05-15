@@ -9,28 +9,21 @@
  */
 class CMF_Core_Autoloader extends XenForo_Autoloader
 {
-	protected $_eval = null;
+	protected $_eval;
 
 	/**
 	 * CMF_Core_Listener cache.
 	 *
 	 * @var CMF_Core_Listener
 	 */
-	protected $_events = null;
-
-	/**
-	 * Path to directory containing the application's library.
-	 *
-	 * @var string
-	 */
-	protected $_rootDir = '.';
+	protected $_events;
 
 	/**
 	 * Path to directory for storing the proxy classes.
 	 *
 	 * @var string
 	 */
-	protected $_classDir = null;
+	protected $_classDir;
 
 	/**
 	 * On autoload this class init_listeners event will be fired.
@@ -72,20 +65,26 @@ class CMF_Core_Autoloader extends XenForo_Autoloader
 			$lateLoad = false;
 			if (!$newInstance)
 			{
+				/** @noinspection CallableParameterUseCaseInTypeContextInspection */
 				$newInstance = new self();
 				$lateLoad = true;
 			}
-			else if (is_bool($newInstance))
+			/** @noinspection CallableParameterUseCaseInTypeContextInspection */
+			elseif (is_bool($newInstance))
 			{
+				/** @noinspection CallableParameterUseCaseInTypeContextInspection */
 				$newInstance = new self();
 			}
-			else if (is_string($newInstance) && class_exists($newInstance))
+			/** @noinspection CallableParameterUseCaseInTypeContextInspection */
+			elseif (is_string($newInstance) && class_exists($newInstance))
 			{
 				$newInstance = new $newInstance();
 			}
 			$newInstance->setupAutoloader($instance->getRootDir());
 			XenForo_Autoloader::setInstance($newInstance);
 			//autoload not working yet
+			//TODO fix to __DIR__ Right now is for php 5.2 compatibility
+			/** @noinspection dirnameCallOnFileConstantInspection */
 			include(dirname(__FILE__) . '/Listener.php');
 			$newInstance->_events = CMF_Core_Listener::getInstance();
 			$newInstance->_lateLoad = $lateLoad;
@@ -158,7 +157,7 @@ class CMF_Core_Autoloader extends XenForo_Autoloader
 				}
 			}
 			//if ready or created
-			else if (
+			elseif (
 				file_exists($proxyFile)
 				|| $this->_saveClass($proxyFile, $this->_getDynamicBody($baseClass, $counter, $baseFile))
 			)
@@ -167,7 +166,7 @@ class CMF_Core_Autoloader extends XenForo_Autoloader
 				include($proxyFile);
 			}
 		}
-		else if (isset($this->_events->listeners['load_class_proxy_class'][$class]))
+		elseif (isset($this->_events->listeners['load_class_proxy_class'][$class]))
 		{
 			$baseFile = $this->autoloaderClassToFile($class);
 			$timestamp = @filemtime($baseFile);
@@ -192,7 +191,7 @@ class CMF_Core_Autoloader extends XenForo_Autoloader
 					}
 				}
 				//if ready or created
-				else if (
+				elseif (
 					file_exists($proxyFile)
 					|| $this->_saveClass($proxyFile, $this->_getProxyBody($class, $baseFile))
 				)
@@ -205,19 +204,18 @@ class CMF_Core_Autoloader extends XenForo_Autoloader
 				{
 					try
 					{
+						$type = 'class';
+
 						if ($isInterface)
 						{
 							$type = 'interface';
 						}
 						//convention over configuration: word "Abstract" must preset in abstract class names
-						else if (strpos($createClass, 'Abstract') || strpos(reset($extend), 'Abstract'))
+						elseif (strpos($createClass, 'Abstract') || strpos(reset($extend), 'Abstract'))
 						{
 							$type = 'abstract class';
 						}
-						else
-						{
-							$type = 'class';
-						}
+
 						foreach ($extend AS $dynamicClass)
 						{
 							// XenForo Class Proxy, in case you're wondering
@@ -299,6 +297,7 @@ class CMF_Core_Autoloader extends XenForo_Autoloader
 	{
 		if (!$baseFile)
 		{
+			/** @noinspection CallableParameterUseCaseInTypeContextInspection */
 			$baseFile = $this->autoloaderClassToFile($class);
 		}
 		if ($body = file_get_contents($baseFile))
@@ -326,6 +325,7 @@ class CMF_Core_Autoloader extends XenForo_Autoloader
 		}
 		if (!$baseFile)
 		{
+			/** @noinspection CallableParameterUseCaseInTypeContextInspection */
 			$baseFile = $this->autoloaderClassToFile($class);
 		}
 		if ($body = file_get_contents($baseFile))
@@ -356,16 +356,16 @@ class CMF_Core_Autoloader extends XenForo_Autoloader
 	}
 
 	/**
-	 * Resolves a class name to an proxyload path.
+	 * Resolves a class name to an proxy load path.
 	 *
-	 * @param string         $class     Name of class to proxyload
+	 * @param string         $class     Name of class to proxy load
 	 * @param string|integer $timestamp Modify time of base class
 	 *
 	 * @return string|boolean False if the class contains invalid characters.
 	 */
 	protected function _proxyFile($class, $timestamp)
 	{
-		if (preg_match('#[^a-zA-Z0-9_]#', $class) || !$timestamp)
+		if (!$timestamp || preg_match('#[^a-zA-Z0-9_]#', $class))
 		{
 			return false;
 		}
@@ -375,7 +375,7 @@ class CMF_Core_Autoloader extends XenForo_Autoloader
 
 	protected function _isEval()
 	{
-		return is_null($this->_eval) ? ($this->_eval = file_exists($this->_getProxyPath() . '/eval.txt')) : $this->_eval;
+		return $this->_eval === null ? ($this->_eval = file_exists($this->_getProxyPath() . '/eval.txt')) : $this->_eval;
 	}
 
 }

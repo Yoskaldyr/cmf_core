@@ -13,7 +13,7 @@ class CMF_Core_Model_Node extends XFCP_CMF_Core_Model_Node
 
 	public function unserializeNodeFields($node, $force = false)
 	{
-		if (!$this->_isNode($node) || (!empty($node['__nodeUnserialized']) && !$force))
+		if ((!$force && !empty($node['__nodeUnserialized'])) || !self::_isNode($node))
 		{
 			return $node;
 		}
@@ -32,7 +32,7 @@ class CMF_Core_Model_Node extends XFCP_CMF_Core_Model_Node
 
 	public function isUnserializedNodeFields($node)
 	{
-		return ($this->_isNode($node) && !empty($node['__nodeUnserialized']));
+		return (self::_isNode($node) && !empty($node['__nodeUnserialized']));
 	}
 
 	public function getNodeById($nodeId, array $fetchOptions = array())
@@ -55,6 +55,7 @@ class CMF_Core_Model_Node extends XFCP_CMF_Core_Model_Node
 		$nodes = parent::prepareNodesWithHandlers($nodes, $nodeHandlers);
 		foreach ($nodes AS &$node)
 		{
+			/** @noinspection ReferenceMismatchInspection */
 			$node = $this->unserializeNodeFields($node);
 		}
 		return $nodes;

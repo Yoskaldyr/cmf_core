@@ -2,7 +2,8 @@
 
 class CMF_Core_Install
 {
-	public static function install($existingAddOn, $addOnData)
+	public static function install(/** @noinspection PhpUnusedParameterInspection */
+		$existingAddOn, $addOnData)
 	{
 		if (XenForo_Application::$versionId < 1020470)
 		{
@@ -32,7 +33,7 @@ class CMF_Core_Install
 			}
 			if (!$pos)
 			{
-				throw new XenForo_Exception('config.php is not writeable. Please add "CMF_Core_Autoloader::getProxy();" to the end of config.php manually before run install.');
+				throw new XenForo_Exception('config.php is not writable. Please add "CMF_Core_Autoloader::getProxy();" to the end of config.php manually before run install.');
 			}
 		}
 	}
@@ -66,7 +67,7 @@ class CMF_Core_Install
 			}
 			if ($pos)
 			{
-				throw new XenForo_Exception('config.php is not writeable. Please remove any "getProxy()" calls from config.php manually before run uninstall.');
+				throw new XenForo_Exception('config.php is not writable. Please remove any "getProxy()" calls from config.php manually before run uninstall.');
 			}
 		}
 		$classDir = XenForo_Helper_File::getInternalDataPath() . '/proxy_classes';

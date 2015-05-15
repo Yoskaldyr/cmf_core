@@ -38,7 +38,7 @@ class CMF_Core_DataWriter_Node extends XFCP_CMF_Core_DataWriter_Node
 
 				foreach ($resetFields as $name => $field)
 				{
-					if (isset($dwData[$name]) && $field)
+					if ($field && isset($dwData[$name]))
 					{
 						//applying to all node types or only selected
 						$applyTypes = (($field == 1) || ($field == 'all')) ? array_keys($nodeTypes) : explode(',', $field);
@@ -69,12 +69,12 @@ class CMF_Core_DataWriter_Node extends XFCP_CMF_Core_DataWriter_Node
 							// prevent any child updates from occuring - we're handling it here
 							$writer->setOption(XenForo_DataWriter_Node::OPTION_POST_WRITE_UPDATE_CHILD_NODES, false);
 							// prevent any child use input data
-							$writer->getOption(CMF_Core_Application::DW_ENABLE_OPTION, false);
-							if ($extra)
-							{
+							$writer->setOption(CMF_Core_Application::DW_ENABLE_OPTION, false);
+							//if ($extra)
+							//{
 								//setting additional settings (can be changed later)
 								//$writer->setExtraData(CMF_Core_Application::DW_EXTRA, $extra);
-							}
+							//}
 							// we already have the data, don't go and query it again
 							$writer->setExistingData($node, true);
 							$writer->bulkSet($resetData[$nodeTypeId]);

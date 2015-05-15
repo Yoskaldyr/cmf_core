@@ -123,10 +123,10 @@ class CMF_Core_Model_Attachment extends XFCP_CMF_Core_Model_Attachment
 
 	/**
 	 * This method is called if the attachment handler for the current content type has no thumbnail
-	 * generation functionality. Will try to create thumbanil with the standard settings
+	 * generation functionality. Will try to create thumbnail with the standard settings
 	 *
 	 * @param XenForo_Upload $file
-	 * @param array $dimensions Wiil contain dimensions of the generated thumbnail or empty, if generation will fail
+	 * @param array $dimensions Will contain dimensions of the generated thumbnail or empty, if generation will fail
 	 * @return string Path to the thumbnail file
 	 */
 	protected function _generateStandardThumbnail(XenForo_Upload $file, array &$dimensions = array())
@@ -137,7 +137,7 @@ class CMF_Core_Model_Attachment extends XFCP_CMF_Core_Model_Attachment
 		{
 			$dimensions = array(
 				'width' => $file->getImageInfoField('width'),
-				'height' => $file->getImageInfoField('height'),
+				'height' => $file->getImageInfoField('height')
 			);
 
 			$tempThumbFile = tempnam(XenForo_Helper_File::getTempDir(), 'xf');

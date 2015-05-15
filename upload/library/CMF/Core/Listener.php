@@ -9,6 +9,8 @@
  * @version 1000011 $Id$
  * @since   1000011
  */
+
+/** @noinspection SingletonFactoryPatternViolationInspection */
 class CMF_Core_Listener extends XenForo_CodeEvent
 {
 	/**
@@ -71,7 +73,7 @@ class CMF_Core_Listener extends XenForo_CodeEvent
 	 */
 	protected static $_counters = array();
 
-	protected static $_configOriginal = null;
+	protected static $_configOriginal;
 
 	/**
 	 * Gets the CMF Core Listener instance.
@@ -211,7 +213,7 @@ class CMF_Core_Listener extends XenForo_CodeEvent
 			{
 				foreach ($extend as $className => $value)
 				{
-					if (!isset($listeners[self::$_extendTypes[$type]['event']][$className]) && !isset(self::$_extend[$type][$className]))
+					if (!isset(self::$_extend[$type][$className]) && !isset($listeners[self::$_extendTypes[$type]['event']][$className]))
 					{
 						$listeners[self::$_extendTypes[$type]['event']][$className] = array(
 							array('CMF_Core_Listener', self::$_extendTypes[$type]['method'])
@@ -331,7 +333,7 @@ class CMF_Core_Listener extends XenForo_CodeEvent
 	 * );
 	 *
 	 * @param array $extenders Array of class list
-	 * @param bool  $prepend Add to start of extenders's list if true
+	 * @param bool  $prepend Add to start of extenders' list if true
 	 *
 	 */
 	public function addExtenders($extenders, $prepend = false)
@@ -344,7 +346,7 @@ class CMF_Core_Listener extends XenForo_CodeEvent
 	 * Usually called from init_listeners event
 	 *
 	 * @param array $extenders Array of class list
-	 * @param bool  $prepend   Add to start of extenders's list if true
+	 * @param bool  $prepend   Add to start of extenders' list if true
 	 *
 	 */
 	public function addProxyExtenders($extenders, $prepend = false)
@@ -356,7 +358,7 @@ class CMF_Core_Listener extends XenForo_CodeEvent
 	 * Add class lists for specified class extender.
 	 *
 	 * @param array  $extenders Array of class list
-	 * @param bool   $prepend   Add to start of extenders's list if true
+	 * @param bool   $prepend   Add to start of extenders' list if true
 	 * @param string $type
 	 */
 	protected function _addTypeExtenders($extenders, $prepend = false, $type = 'all')
@@ -375,12 +377,12 @@ class CMF_Core_Listener extends XenForo_CodeEvent
 	}
 
 	/**
-	 * Extender method for single normal class with event autocreate
+	 * Extender method for single normal class with event auto-create
 	 * Usage only after init_listeners event
 	 *
 	 * @param string $class   Class name to extend
 	 * @param string $extend  Extend class name
-	 * @param bool   $prepend Add to start of extenders's list if true
+	 * @param bool   $prepend Add to start of extenders' list if true
 	 *
 	 */
 	public function extendClass($class, $extend, $prepend = false)
@@ -393,7 +395,7 @@ class CMF_Core_Listener extends XenForo_CodeEvent
 	 *
 	 * @param string $class   Class name to extend
 	 * @param string $extend  Extend class name
-	 * @param bool   $prepend Add to start of extenders's list if true
+	 * @param bool   $prepend Add to start of extenders' list if true
 	 *
 	 */
 	public function extendProxyClass($class, $extend, $prepend = false)
@@ -402,12 +404,12 @@ class CMF_Core_Listener extends XenForo_CodeEvent
 	}
 
 	/**
-	 * Extender method for single normal class with event autocreate
+	 * Extender method for single normal class with event auto-create
 	 * Usage only after init_listeners event
 	 *
 	 * @param string $class   Class name to extend
 	 * @param string $extend  Extend class name
-	 * @param bool   $prepend Add to start of extenders's list if true
+	 * @param bool   $prepend Add to start of extenders' list if true
 	 * @param string $type
 	 */
 	protected function _extendTypeClass($class, $extend, $prepend = false, $type = 'all')
@@ -461,7 +463,7 @@ class CMF_Core_Listener extends XenForo_CodeEvent
 				'XenForo_Model_Post' => 'CMF_Core_Model_Post',
 				'XenForo_Model_Node' => 'CMF_Core_Model_Node',
 				'XenForo_Model_Forum' => 'CMF_Core_Model_Forum',
-				'XenForo_Model_DataRegistry' => 'CMF_Core_Model_DataRegistry',
+				'XenForo_Model_DataRegistry' => 'CMF_Core_Model_DataRegistry'
 			)
 		);
 		$events->addProxyExtenders(
@@ -553,6 +555,7 @@ class CMF_Core_Listener extends XenForo_CodeEvent
 			CMF_Core_Application::setMerged(CMF_Core_Application::INPUT_FIELDS, $dwName, $fields);
 			if ($controllerName && $actions)
 			{
+				/** @noinspection CallableParameterUseCaseInTypeContextInspection */
 				$actionKeys = is_array($actions) ? array_fill_keys($actions, $dwName) : array($actions => $dwName);
 				CMF_Core_Application::setMerged(CMF_Core_Application::INPUT_ACTIONS, $controllerName, $actionKeys, true);
 			}
@@ -609,6 +612,7 @@ class CMF_Core_Listener extends XenForo_CodeEvent
 			{
 				self::$_extend['proxy'][$class] = array(self::$_extend['proxy'][$class]);
 			}
+			/** @noinspection ReferenceMismatchInspection */
 			$extend = array_merge($extend, self::$_extend['proxy'][$class]);
 		}
 	}

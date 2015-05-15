@@ -7,7 +7,6 @@
  * @version 1000011 $Id$
  * @since   1000011
  *
- * @method CMF_Core_Model_Node getModelFromCache
  */
 class CMF_Core_Model_Forum extends XFCP_CMF_Core_Model_Forum
 {
@@ -27,6 +26,7 @@ class CMF_Core_Model_Forum extends XFCP_CMF_Core_Model_Forum
 
 	public function prepareForum(array $forum)
 	{
+		/** @noinspection PhpUndefinedMethodInspection */
 		return $this->getModelFromCache('XenForo_Model_Node')->unserializeNodeFields(parent::prepareForum($forum));
 	}
 }

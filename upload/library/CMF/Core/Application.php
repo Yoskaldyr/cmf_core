@@ -185,7 +185,7 @@ class CMF_Core_Application extends XenForo_Application
 
 	/**
 	 * Constant key for storing
-	 * datawriter data for bulk set on presave
+	 * datawriter data for bulk set on preSave
 	 */
 	const DW_DATA = 'dwData';
 
@@ -268,7 +268,7 @@ class CMF_Core_Application extends XenForo_Application
 				}
 				return $merged;
 			}
-			else if (is_object($class) || $searchParents)
+			elseif (is_object($class) || $searchParents)
 			{
 				$merged = array();
 				if ($originalClassName = self::resolveOriginalClassName($class))
@@ -288,7 +288,7 @@ class CMF_Core_Application extends XenForo_Application
 				}
 				return $merged;
 			}
-			else if (isset(self::$_data[$key][$class]))
+			elseif (isset(self::$_data[$key][$class]))
 			{
 				$return = self::$_data[$key][$class];
 				return $return;
@@ -323,16 +323,13 @@ class CMF_Core_Application extends XenForo_Application
 
 	public static function setMerged($key, $className, array $data, $recursiveMerge = false)
 	{
-		if (self::$enabled && $className && $key && $data)
+		if (self::$enabled && $className && $key && $data && ($typeName = self::resolveOriginalClassName($className)))
 		{
-			if ($typeName = self::resolveOriginalClassName($className))
+			if (!isset(self::$_data[$key][$typeName]))
 			{
-				if (!isset(self::$_data[$key][$typeName]))
-				{
-					self::$_data[$key][$typeName] = array();
-				}
-				self::$_data[$key][$typeName] = ($recursiveMerge) ? array_merge_recursive(self::$_data[$key][$typeName], $data) : XenForo_Application::mapMerge(self::$_data[$key][$typeName], $data);
+				self::$_data[$key][$typeName] = array();
 			}
+			self::$_data[$key][$typeName] = ($recursiveMerge) ? array_merge_recursive(self::$_data[$key][$typeName], $data) : XenForo_Application::mapMerge(self::$_data[$key][$typeName], $data);
 		}
 	}
 
@@ -350,16 +347,16 @@ class CMF_Core_Application extends XenForo_Application
 		{
 			return;
 		}
-		else if (!$key)
+		elseif (!$key)
 		{
 			self::$_data=array();
 		}
-		else if (!$className)
+		elseif (!$className)
 		{
 			self::$_data[$key]=array();
 		}
 		//if group clear
-		else if (is_array($className))
+		elseif (is_array($className))
 		{
 			foreach ($className as $typeItem)
 			{
@@ -367,7 +364,7 @@ class CMF_Core_Application extends XenForo_Application
 			}
 			return;
 		}
-		else if ($typeName = self::resolveOriginalClassName($className))
+		elseif ($typeName = self::resolveOriginalClassName($className))
 		{
 			self::$_data[$key][$typeName] = array();
 		}
@@ -395,7 +392,7 @@ class CMF_Core_Application extends XenForo_Application
 						{
 							$data[$fieldName] = array();
 						}
-						else if (!is_array($data[$fieldName]))
+						elseif (!is_array($data[$fieldName]))
 						{
 							$data[$fieldName] = unserialize($data[$fieldName]);
 						}

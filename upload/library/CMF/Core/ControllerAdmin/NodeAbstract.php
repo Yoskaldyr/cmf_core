@@ -12,6 +12,8 @@ abstract class CMF_Core_ControllerAdmin_NodeAbstract extends XFCP_CMF_Core_Contr
 	/**
 	 * One of the pre-dispatch behaviors for the whole set of admin controllers.
 	 * but only for node sub classes
+	 *
+	 * @param string $action
 	 */
 	protected function _assertInstallLocked($action)
 	{
@@ -37,6 +39,10 @@ abstract class CMF_Core_ControllerAdmin_NodeAbstract extends XFCP_CMF_Core_Contr
 	/**
 	 * One of the post-dispatch behaviors for the whole set of admin controllers.
 	 * but only for node sub classes
+	 *
+	 * @param XenForo_ControllerResponse_Abstract $controllerResponse
+	 * @param string                              $controllerName
+	 * @param string                              $action
 	 */
 	protected function _logAdminRequest($controllerResponse, $controllerName, $action)
 	{

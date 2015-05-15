@@ -18,7 +18,7 @@ abstract class CMF_Core_Image_Abstract extends XFCP_CMF_Core_Image_Abstract
 	/**
 	 * Thumbnails the current image.
 	 *
-	 * @param integer $length The maximum lenght of the thumb side.
+	 * @param integer $length The maximum length of the thumb side.
 	 *
 	 * @return boolean True if thumbnailing was necessary
 	 */
