@@ -29,7 +29,7 @@
 		}
 		internal;
     }
-    location ~ /forum/[^/]+\.php$ {
+    location ~ ^/forum/[^/]+\.php$ {
 		try_files $fastcgi_script_name =404;
 		include fastcgi.conf;
 		fastcgi_pass_header Etag;
