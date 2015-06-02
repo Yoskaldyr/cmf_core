@@ -18,3 +18,4 @@ CMF_Core - Расширенное ядро
 ----------
 #### 1. [Автозагрузчик CMF_Core_Autoloader.](autoloader.md)
 #### 2. [Класс CMF_Core_Listener. Расширенная работа с событиями. Расширение любых классов XenForo.](listeners.md)
+#### 3. [Настройка X-Accel-Redirect для Nginx.](nginx.md)

@@ -17,3 +17,4 @@ Contents
 --------
 #### 1. [Autoloader CMF_Core_Autoloader.](autoloader.md)
 #### 2. [CMF_Core_Listener class. Extended event handling. Dynamic extending any XenForo class.](listeners.md)
+#### 3. [X-Accel-Redirect Nginx Configuration.](nginx.md)

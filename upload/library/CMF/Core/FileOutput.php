@@ -14,10 +14,11 @@ class CMF_Core_FileOutput extends XFCP_CMF_Core_FileOutput
 			switch (XenForo_Application::get('options')->cmfDownloadMode)
 			{
 				case 'xaccel':
-					/** @var XenForo_Application $app */
-					$app = XenForo_Application::getInstance();
-					$root = $app->getRootDir();
-					header('X-Accel-Redirect: ' . ((strpos($this->_fileName, $root) === 0) ? substr($this->_fileName, strlen($root)) : $this->_fileName));
+					/** @noinspection PhpUndefinedMethodInspection */
+					$root = XenForo_Application::getInstance()->getRootDir() . '/';
+					$path = rtrim((strpos($this->_fileName, $root) === 0) ? substr($this->_fileName, strlen($root)) : $this->_fileName, '/');
+					$base = parse_url(rtrim(XenForo_Application::get('options')->boardUrl, '/ ') . '/', PHP_URL_PATH);
+					header('X-Accel-Redirect: ' . $base . $path);
 					break;
 				case 'xsendfile':
 					header('X-Sendfile: ' . $this->_fileName);

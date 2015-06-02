@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<language title="Russian (RU)" date_format="j M Y" time_format="H:i" decimal_point="," thousands_separator="." language_code="ru-RU" text_direction="LTR" addon_id="CMF_Core">
+  <phrase title="cmf_child_forums" addon_id="CMF_Core" version_id="1000031" version_string="1.0.0 b1"><![CDATA[Дочерние разделы]]></phrase>
+  <phrase title="cmf_child_nodes" addon_id="CMF_Core" version_id="0" version_string="0.0.1 alpha"><![CDATA[Дочерние узлы]]></phrase>
+  <phrase title="cmf_update_child_forums_on_save" addon_id="CMF_Core" version_id="1000031" version_string="1.0.0 b1"><![CDATA[Обновлять дочерние разделы при сохранении]]></phrase>
+  <phrase title="cmf_update_child_nodes_on_save" addon_id="CMF_Core" version_id="0" version_string="0.0.1 alpha"><![CDATA[Обновлять дочерние узлы при сохранении]]></phrase>
+  <phrase title="option_cmfDownloadMode" addon_id="CMF_Core" version_id="1000071" version_string="1.0.1"><![CDATA[Режим скачивания]]></phrase>
+  <phrase title="option_cmfDownloadMode_explain" addon_id="CMF_Core" version_id="1000073" version_string="1.0.3"><![CDATA[Режим скачивания для вложений и прокси-изображений.]]></phrase>
+  <phrase title="option_group_cmf" addon_id="CMF_Core" version_id="1000051" version_string="1.0.0 RC1"><![CDATA[Content Management Framework (CMF)]]></phrase>
+  <phrase title="option_group_cmf_description" addon_id="CMF_Core" version_id="1000051" version_string="1.0.0 RC1"><![CDATA[]]></phrase>
+</language>
