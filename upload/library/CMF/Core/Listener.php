@@ -112,6 +112,10 @@ class CMF_Core_Listener extends XenForo_CodeEvent
 			$this->prepareDynamicListeners(),
 			$this->listeners
 		);
+		if (isset($this->listeners['load_class_proxy_class']['_Enable_CMF']) && $this->listeners['load_class_proxy_class']['_Enable_CMF'])
+		{
+			$this->appendListener('init_dependencies', array('CMF_Core_Listener', 'rebuildListenersCache'));
+		}
 	}
 
 	public function fireInitListeners($lateLoad)
@@ -194,6 +198,19 @@ class CMF_Core_Listener extends XenForo_CodeEvent
 		{
 			XenForo_Application::set('config', self::$_configOriginal);
 		}
+	}
+
+	/**
+	 * Rebuild listeners cache.
+	 *
+	 * @param XenForo_Dependencies_Abstract $dependencies
+	 * @param array                         $data
+	 *
+	 * */
+	public static function rebuildListenersCache(/** @noinspection PhpUnusedParameterInspection */
+		XenForo_Dependencies_Abstract $dependencies, array $data)
+	{
+		XenForo_Model::create('XenForo_Model_CodeEvent')->rebuildEventListenerCache();
 	}
 
 	/**

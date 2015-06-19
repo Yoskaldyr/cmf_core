@@ -88,6 +88,10 @@ class CMF_Core_Model_DataRegistry extends XFCP_CMF_Core_Model_DataRegistry
 				}
 			}
 			XenForo_Application::setSimpleCacheData('cmfAddOns', $addOnLinks);
+			if (isset($value['load_class_proxy_class']['_Enable_CMF']))
+			{
+				$value['load_class_proxy_class']['_Enable_CMF'] = array();
+			}
 		}
 		parent::set($itemName, $value);
 	}
